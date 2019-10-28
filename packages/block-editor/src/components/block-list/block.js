@@ -21,6 +21,7 @@ import {
 	isReusableBlock,
 	isUnmodifiedDefaultBlock,
 	getUnregisteredTypeHandlerName,
+	__experimentalGetBlockLabel,
 } from '@wordpress/blocks';
 import { KeyboardShortcuts, withFilters } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
@@ -407,13 +408,11 @@ function BlockListBlock( {
 		}
 	};
 
-	// Rendering the output
 	const isHovered = isBlockHovered && ! isPartOfMultiSelection;
 	const blockType = getBlockType( name );
+
 	// translators: %s: Type of block (i.e. Text, Image etc)
-	const blockLabel = sprintf( __( 'Block: %s' ), blockType.title );
-	// The block as rendered in the editor is composed of general block UI
-	// (mover, toolbar, wrapper) and the display of the block content.
+	const blockLabel = sprintf( __( 'Block: %s' ), __experimentalGetBlockLabel( blockType, attributes, ' - ' ) );
 
 	const isUnregisteredBlock = name === getUnregisteredTypeHandlerName();
 

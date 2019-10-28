@@ -132,4 +132,11 @@ describe( 'getBlockLabel', () => {
 
 		expect( getBlockLabel( blockType, attributes ) ).toBe( 'Recipe: Cupcakes!' );
 	} );
+
+	it( 'allows specification of a custom separator', () => {
+		const blockType = { title: 'Recipe', __experimentalDisplayName: 'heading' };
+		const attributes = { heading: 'Cupcakes!' };
+
+		expect( getBlockLabel( blockType, attributes, ' - ' ) ).toBe( 'Recipe - Cupcakes!' );
+	} );
 } );
