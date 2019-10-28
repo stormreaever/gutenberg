@@ -8,7 +8,7 @@ import { noop } from 'lodash';
  */
 import { createBlock } from '../factory';
 import { getBlockTypes, unregisterBlockType, registerBlockType, setDefaultBlockName } from '../registration';
-import { isUnmodifiedDefaultBlock } from '../utils';
+import { isUnmodifiedDefaultBlock, getBlockLabel } from '../utils';
 
 describe( 'block helpers', () => {
 	beforeAll( () => {
@@ -94,5 +94,42 @@ describe( 'block helpers', () => {
 			setDefaultBlockName( 'core/test-block2' );
 			expect( isUnmodifiedDefaultBlock( createBlock( 'core/test-block2' ) ) ).toBe( true );
 		} );
+	} );
+} );
+
+describe( 'getBlockLabel', () => {
+	it( 'returns only the block title when the block has no display name', () => {
+		const blockType = { title: 'Recipe' };
+		const attributes = {};
+
+		expect( getBlockLabel( blockType, attributes ) ).toBe( 'Recipe' );
+	} );
+
+	it( 'returns only the block title when the block has a display name, but the attribute is undefined', () => {
+		const blockType = { title: 'Recipe', __experimentalDisplayName: 'heading' };
+		const attributes = {};
+
+		expect( getBlockLabel( blockType, attributes ) ).toBe( 'Recipe' );
+	} );
+
+	it( 'returns only the block title when the block has a display name, but the attribute is an empty string', () => {
+		const blockType = { title: 'Recipe', __experimentalDisplayName: 'heading' };
+		const attributes = { heading: '' };
+
+		expect( getBlockLabel( blockType, attributes ) ).toBe( 'Recipe' );
+	} );
+
+	it( 'returns the block title with the display name when the display name and its attribute are defined', () => {
+		const blockType = { title: 'Recipe', __experimentalDisplayName: 'heading' };
+		const attributes = { heading: 'Cupcakes!' };
+
+		expect( getBlockLabel( blockType, attributes ) ).toBe( 'Recipe: Cupcakes!' );
+	} );
+
+	it( 'removes any html elements from the display name attribute', () => {
+		const blockType = { title: 'Recipe', __experimentalDisplayName: 'heading' };
+		const attributes = { heading: '<b><span class="my-class">Cupcakes!</span></b>' };
+
+		expect( getBlockLabel( blockType, attributes ) ).toBe( 'Recipe: Cupcakes!' );
 	} );
 } );

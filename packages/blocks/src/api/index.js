@@ -56,6 +56,7 @@ export {
 	isUnmodifiedDefaultBlock,
 	normalizeIconObject,
 	isValidIcon,
+	getBlockLabel as __experimentalGetBlockLabel,
 } from './utils';
 export {
 	doBlocksMatchTemplate,

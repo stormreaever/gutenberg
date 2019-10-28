@@ -8,6 +8,7 @@ import { default as tinycolor, mostReadable } from 'tinycolor2';
  * WordPress dependencies
  */
 import { Component, isValidElement } from '@wordpress/element';
+import { create, getTextContent } from '@wordpress/rich-text';
 
 /**
  * Internal dependencies
@@ -120,4 +121,30 @@ export function normalizeBlockType( blockTypeOrName ) {
 	}
 
 	return blockTypeOrName;
+}
+
+/**
+ * Get the block label, using the block title and display name if it has one.
+ * Use only the block title if it doesn't have a display name.
+ *
+ * @param {Object} blockType  The block type.
+ * @param {Object} attributes The values of the block's attributes
+ *
+ * @return {string} The block label.
+ */
+export function getBlockLabel( blockType, attributes ) {
+	const {
+		__experimentalDisplayName: displayNameAttribute,
+		title: blockTitle,
+	} = blockType;
+
+	if ( ! displayNameAttribute || ! attributes[ displayNameAttribute ] ) {
+		return blockTitle;
+	}
+
+	// Strip any formatting.
+	const richTextValue = create( { html: attributes[ displayNameAttribute ] } );
+	const formatlessDisplayName = getTextContent( richTextValue );
+
+	return `${ blockTitle }: ${ formatlessDisplayName }`;
 }
