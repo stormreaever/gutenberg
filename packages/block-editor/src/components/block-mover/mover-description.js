@@ -7,8 +7,8 @@ import { __, _n, sprintf } from '@wordpress/i18n';
  * Return a label for the block movement controls depending on block position.
  *
  * @param {number}  selectedCount Number of blocks selected.
- * @param {string}  type          Block type - in the case of a single block, should
- *                                 define its 'type'. I.e. 'Text', 'Heading', 'Image' etc.
+ * @param {string}  blockLabel    Block label, generally the block type, but sometimes this
+ * 								  also includes display text (e.g. 'Header: My Life Story')
  * @param {number}  firstIndex    The index (position - 1) of the first block selected.
  * @param {boolean} isFirst       This is the first block.
  * @param {boolean} isLast        This is the last block.
@@ -20,7 +20,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
  *
  * @return {string} Label for the block movement controls.
  */
-export function getBlockMoverDescription( selectedCount, type, firstIndex, isFirst, isLast, dir, orientation, isRTL ) {
+export function getBlockMoverDescription( selectedCount, blockLabel, firstIndex, isFirst, isLast, dir, orientation, isRTL ) {
 	const position = ( firstIndex + 1 );
 
 	const getMovementDirection = ( moveDirection ) => {
@@ -44,7 +44,7 @@ export function getBlockMoverDescription( selectedCount, type, firstIndex, isFir
 
 	if ( isFirst && isLast ) {
 		// translators: %s: Type of block (i.e. Text, Image etc)
-		return sprintf( __( 'Block %s is the only block, and cannot be moved' ), type );
+		return sprintf( __( "Block '%s' is the only block, and cannot be moved" ), blockLabel );
 	}
 
 	if ( dir > 0 && ! isLast ) {
@@ -52,7 +52,7 @@ export function getBlockMoverDescription( selectedCount, type, firstIndex, isFir
 		return sprintf(
 			// translators: 1: Type of block (i.e. Text, Image etc), 2: Position of selected block, 3: Direction of movement ( up, down, left, right ), 4: New position
 			__( 'Move %1$s block from position %2$d %3$s to position %4$d' ),
-			type,
+			blockLabel,
 			position,
 			getMovementDirection( 'down' ),
 			( position + 1 ),
@@ -64,7 +64,7 @@ export function getBlockMoverDescription( selectedCount, type, firstIndex, isFir
 		// translators: 1: Type of block (i.e. Text, Image etc), 2: Direction of movement ( up, down, left, right )
 		return sprintf(
 			__( 'Block %1$s is at the end of the content and can’t be moved %2$s' ),
-			type,
+			blockLabel,
 			getMovementDirection( 'down' ),
 
 		);
@@ -75,7 +75,7 @@ export function getBlockMoverDescription( selectedCount, type, firstIndex, isFir
 		return sprintf(
 			// translators: 1: Type of block (i.e. Text, Image etc), 2: Position of selected block, 3: Direction of movement ( up, down, left, right ), 4: New position
 			__( 'Move %1$s block from position %2$d %3$s to position %4$d' ),
-			type,
+			blockLabel,
 			position,
 			getMovementDirection( 'up' ),
 			( position - 1 ),
@@ -87,7 +87,7 @@ export function getBlockMoverDescription( selectedCount, type, firstIndex, isFir
 		// translators: 1: Type of block (i.e. Text, Image etc), 2: Direction of movement ( up, down, left, right )
 		return sprintf(
 			__( 'Block %1$s is at the beginning of the content and can’t be moved %2$s' ),
-			type,
+			blockLabel,
 			getMovementDirection( 'up' ),
 		);
 	}

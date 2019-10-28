@@ -8,63 +8,63 @@ describe( 'block mover', () => {
 		dirDown = 1;
 
 	describe( 'getBlockMoverDescription', () => {
-		const type = 'TestType';
+		const label = 'Header: Writing Tests Considered Harmful';
 
 		it( 'Should generate a title for the first item moving up', () => {
 			expect( getBlockMoverDescription(
 				1,
-				type,
+				label,
 				0,
 				true,
 				false,
 				dirUp,
 			) ).toBe(
-				`Block ${ type } is at the beginning of the content and can’t be moved up`
+				`Block '${ label }' is at the beginning of the content and can’t be moved up`
 			);
 		} );
 
 		it( 'Should generate a title for the last item moving down', () => {
 			expect( getBlockMoverDescription(
 				1,
-				type,
+				label,
 				3,
 				false,
 				true,
 				dirDown,
-			) ).toBe( `Block ${ type } is at the end of the content and can’t be moved down` );
+			) ).toBe( `Block '${ label }' is at the end of the content and can’t be moved down` );
 		} );
 
 		it( 'Should generate a title for the second item moving up', () => {
 			expect( getBlockMoverDescription(
 				1,
-				type,
+				label,
 				1,
 				false,
 				false,
 				dirUp,
-			) ).toBe( `Move ${ type } block from position 2 up to position 1` );
+			) ).toBe( `Move '${ label }' block from position 2 up to position 1` );
 		} );
 
 		it( 'Should generate a title for the second item moving down', () => {
 			expect( getBlockMoverDescription(
 				1,
-				type,
+				label,
 				1,
 				false,
 				false,
 				dirDown,
-			) ).toBe( `Move ${ type } block from position 2 down to position 3` );
+			) ).toBe( `Move '${ label }' block from position 2 down to position 3` );
 		} );
 
 		it( 'Should generate a title for the only item in the list', () => {
 			expect( getBlockMoverDescription(
 				1,
-				type,
+				label,
 				0,
 				true,
 				true,
 				dirDown,
-			) ).toBe( `Block ${ type } is the only block, and cannot be moved` );
+			) ).toBe( `Block '${ label }' is the only block, and cannot be moved` );
 		} );
 	} );
 
