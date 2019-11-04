@@ -13,22 +13,26 @@ import Button from '../button';
 import RangeControl from '../range-control';
 import CustomSelect from '../custom-select';
 
+const DEFAULT_FONT_SIZE = 'default';
+const CUSTOM_FONT_SIZE = 'custom';
+
 function getSelectValueFromFontSize( fontSizes, value ) {
 	if ( value ) {
 		const fontSizeValue = fontSizes.find( ( font ) => font.size === value );
-		return fontSizeValue ? fontSizeValue.slug : 'custom';
+		return fontSizeValue ? fontSizeValue.slug : CUSTOM_FONT_SIZE;
 	}
-	return 'normal';
+	return DEFAULT_FONT_SIZE;
 }
 
 function getSelectOptions( optionsArray ) {
 	return [
+		{ key: DEFAULT_FONT_SIZE, name: __( 'Default' ) },
 		...optionsArray.map( ( option ) => ( {
 			key: option.slug,
 			name: option.name,
 			style: { fontSize: option.size },
 		} ) ),
-		{ key: 'custom', name: __( 'Custom' ) },
+		{ key: CUSTOM_FONT_SIZE, name: __( 'Custom' ) },
 	];
 }
 
@@ -49,17 +53,26 @@ function FontSizePicker( {
 
 	const onChangeValue = ( event ) => {
 		const newValue = event.target.value;
-		setCurrentSelectValue( getSelectValueFromFontSize( fontSizes, Number( newValue ) ) );
 		if ( newValue === '' ) {
-			onChange( undefined );
+			setDefault();
 			return;
 		}
+		setCurrentSelectValue( getSelectValueFromFontSize( fontSizes, Number( newValue ) ) );
 		onChange( Number( newValue ) );
 	};
 
 	const onSelectChangeValue = ( { selectedItem } ) => {
+		if ( selectedItem.key === DEFAULT_FONT_SIZE ) {
+			setDefault();
+			return;
+		}
 		setCurrentSelectValue( selectedItem.key );
 		onChange( selectedItem.style && selectedItem.style.fontSize );
+	};
+
+	const setDefault = () => {
+		onChange( undefined );
+		setCurrentSelectValue( getSelectValueFromFontSize( fontSizes, undefined ) );
 	};
 
 	const items = getSelectOptions( fontSizes );
@@ -96,10 +109,7 @@ function FontSizePicker( {
 					className="components-color-palette__clear"
 					type="button"
 					disabled={ value === undefined }
-					onClick={ () => {
-						onChange( undefined );
-						setCurrentSelectValue( getSelectValueFromFontSize( fontSizes, undefined ) );
-					} }
+					onClick={ setDefault }
 					isSmall
 					isDefault
 				>
