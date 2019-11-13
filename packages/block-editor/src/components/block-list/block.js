@@ -101,7 +101,7 @@ function BlockListBlock( {
 	enableAnimation,
 	isNavigationMode,
 	setNavigationMode,
-    shouldConsumeChildToolbar,
+    __experimentalConsumeChildToolbar: consumeChildToolbar,
 	isMultiSelecting,
 } ) {
 	// Random state used to rerender the component if needed, ideally we don't need this
@@ -444,7 +444,6 @@ function BlockListBlock( {
 		( ! isNavigationMode && ! isFocusMode && isHovered && ! isEmptyDefaultBlock )
 	);
 	const shouldShowContextualToolbar =
-		! shouldProxyToolbarToParent &&
 		! isNavigationMode &&
 		! hasFixedToolbar &&
 		! showEmptyBlockSideInserter &&
@@ -584,7 +583,7 @@ function BlockListBlock( {
 						ref={ breadcrumb }
 					/>
 				) }
-				{ ( shouldShowContextualToolbar || isForcingContextualToolbar.current ) && (
+				{ ( ( ! consumeChildToolbar && shouldShowContextualToolbar ) || isForcingContextualToolbar.current ) && (
 					<BlockContextualToolbar
 						// If the toolbar is being shown because of being forced
 						// it should focus the toolbar right after the mount.
@@ -592,7 +591,7 @@ function BlockListBlock( {
 					/>
 				) }
 
-				{ isParentOfSelectedBlock && shouldConsumeChildToolbar && (
+				{ isParentOfSelectedBlock && isRootOfHierarchy && (
 					<BlockContextualToolbar
 						// If the toolbar is being shown because of being forced
 						// it should focus the toolbar right after the mount.
@@ -686,11 +685,9 @@ const applyWithSelect = withSelect(
 			getBlockOrder,
 			__unstableGetBlockWithoutInnerBlocks,
 			isNavigationMode,
+			getBlockHierarchyRootClientId,
 		} = select( 'core/block-editor' );
 
-		const {
-			getBlockSupport,
-		} = select( 'core/blocks' );
 		const block = __unstableGetBlockWithoutInnerBlocks( clientId );
 
 		const isSelected = isBlockSelected( clientId );
@@ -699,6 +696,7 @@ const applyWithSelect = withSelect(
 		const isParentOfSelectedBlock = hasSelectedInnerBlock( clientId, true );
 		const index = getBlockIndex( clientId, rootClientId );
 		const blockOrder = getBlockOrder( rootClientId );
+		const isRootOfHierarchy = clientId === getBlockHierarchyRootClientId( clientId );
 
 		// The fallback to `{}` is a temporary fix.
 		// This function should never be called when a block is not present in the state.
@@ -725,8 +723,6 @@ const applyWithSelect = withSelect(
 			hasFixedToolbar: hasFixedToolbar && isLargeViewport,
 			isLast: index === blockOrder.length - 1,
 			isNavigationMode: isNavigationMode(),
-			shouldProxyToolbarToParent: getBlockSupport( block.name, 'proxyToolbarToParent', false ),
-			shouldConsumeChildToolbar: getBlockSupport( block.name, 'consumeChildToolbar', false ),
 			isRTL,
 
 			// Users of the editor.BlockListBlock filter used to be able to access the block prop
@@ -739,6 +735,7 @@ const applyWithSelect = withSelect(
 			isValid,
 			isSelected,
 			isParentOfSelectedBlock,
+			isRootOfHierarchy,
 		};
 	}
 );
