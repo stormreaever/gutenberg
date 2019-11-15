@@ -18,7 +18,7 @@ const CUSTOM_FONT_SIZE = 'custom';
 
 function getSelectValueFromFontSize( fontSizes, value ) {
 	if ( value ) {
-		const fontSizeValue = fontSizes.find( ( font ) => font.size === value );
+		const fontSizeValue = fontSizes.find( ( font ) => font.size === Number( value ) );
 		return fontSizeValue ? fontSizeValue.slug : CUSTOM_FONT_SIZE;
 	}
 	return DEFAULT_FONT_SIZE;
@@ -53,26 +53,23 @@ function FontSizePicker( {
 
 	const onChangeValue = ( event ) => {
 		const newValue = event.target.value;
-		if ( newValue === '' ) {
-			setDefault();
-			return;
-		}
-		setCurrentSelectValue( getSelectValueFromFontSize( fontSizes, Number( newValue ) ) );
-		onChange( Number( newValue ) );
+		setCurrentSelectValue( getSelectValueFromFontSize( fontSizes, newValue ) );
+		onChange( newValue ? Number( newValue ) : undefined );
 	};
 
 	const onSelectChangeValue = ( { selectedItem } ) => {
+		setCurrentSelectValue( selectedItem.key );
+
 		if ( selectedItem.key === DEFAULT_FONT_SIZE ) {
-			setDefault();
+			onChange( undefined );
 			return;
 		}
-		setCurrentSelectValue( selectedItem.key );
-		onChange( selectedItem.style && selectedItem.style.fontSize );
-	};
 
-	const setDefault = () => {
-		onChange( undefined );
-		setCurrentSelectValue( getSelectValueFromFontSize( fontSizes, undefined ) );
+		if ( selectedItem.key === CUSTOM_FONT_SIZE ) {
+			return;
+		}
+
+		onChange( selectedItem.style && selectedItem.style.fontSize );
 	};
 
 	const items = getSelectOptions( fontSizes );
@@ -109,7 +106,7 @@ function FontSizePicker( {
 					className="components-color-palette__clear"
 					type="button"
 					disabled={ value === undefined }
-					onClick={ setDefault }
+					onClick={ () => onSelectChangeValue( DEFAULT_FONT_SIZE ) }
 					isSmall
 					isDefault
 				>
