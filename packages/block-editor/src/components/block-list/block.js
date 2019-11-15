@@ -78,6 +78,7 @@ function BlockListBlock( {
 	isEmptyDefaultBlock,
 	isMovable,
 	isAncestorOfSelectedBlock,
+	isParentOfSelectedBlock,
 	isDraggable,
 	isSelectionEnabled,
 	className,
@@ -596,7 +597,7 @@ function BlockListBlock( {
 					/>
 				) }
 
-				{ isAncestorOfSelectedBlock && (
+				{ isParentOfSelectedBlock && (
 					// A slot made available on parents when a child Block is selected
 					// to allow child Blocks to render their toolbars into the DOM
 					// of the parent.
@@ -720,7 +721,9 @@ const applyWithSelect = withSelect(
 		const isSelected = isBlockSelected( clientId );
 		const { hasFixedToolbar, focusMode, isRTL } = getSettings();
 		const templateLock = getTemplateLock( rootClientId );
-		const isAncestorOfSelectedBlock = hasSelectedInnerBlock( clientId, true );
+		const checkDeep = true;
+		const isAncestorOfSelectedBlock = hasSelectedInnerBlock( clientId, checkDeep );
+		const isParentOfSelectedBlock = hasSelectedInnerBlock( clientId );
 		const index = getBlockIndex( clientId, rootClientId );
 		const blockOrder = getBlockOrder( rootClientId );
 
@@ -761,6 +764,7 @@ const applyWithSelect = withSelect(
 			isValid,
 			isSelected,
 			isAncestorOfSelectedBlock,
+			isParentOfSelectedBlock,
 		};
 	}
 );
