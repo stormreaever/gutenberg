@@ -529,13 +529,9 @@ function BlockListBlock( {
 
 	const { Fill, Slot } = createSlotFill( 'ChildToolbar' );
 
-	const ChildToolbar = () => (
+	const ChildToolbar = ( { children } ) => (
 		<Fill>
-			<BlockContextualToolbar
-				// If the toolbar is being shown because of being forced
-				// it should focus the toolbar right after the mount.
-				focusOnMount={ isForcingContextualToolbar.current }
-			/>
+			{ children }
 		</Fill>
 	);
 
@@ -603,8 +599,15 @@ function BlockListBlock( {
 					/>
 				) }
 
-				{ ( ( ! consumeChildToolbar && shouldShowContextualToolbar ) || isForcingContextualToolbar.current ) && (
+				{ isParentOfSelectedBlock && (
+					// A slot made available on parents when a child Block is selected
+					// to allow child Blocks to render their toolbars into the DOM
+					// of the parent.
+					<ChildToolbarSlot />
+				) }
 
+				{ ( ( ! consumeChildToolbar && shouldShowContextualToolbar ) || isForcingContextualToolbar.current ) && (
+					// Standard toolbar attached directly to the Block.
 					<BlockContextualToolbar
 						// If the toolbar is being shown because of being forced
 						// it should focus the toolbar right after the mount.
@@ -613,16 +616,17 @@ function BlockListBlock( {
 
 				) }
 
-				{ name === 'core/navigation-menu-item' && shouldShowContextualToolbar && (
-					<ChildToolbar />
-				) }
-
-				{ isParentOfSelectedBlock && (
-					<ChildToolbarSlot />
-						// If the toolbar is being shown because of being forced
-						// it should focus the toolbar right after the mount.
-						focusOnMount={ isForcingContextualToolbar.current }
-					/>
+				{ consumeChildToolbar && shouldShowContextualToolbar && (
+					// If the parent Block is set to consume toolbars of the child Blocks
+					// then render the child Block's toolbar into the Slot provided
+					// by the parent.
+					<ChildToolbar>
+						<BlockContextualToolbar
+							// If the toolbar is being shown because of being forced
+							// it should focus the toolbar right after the mount.
+							focusOnMount={ isForcingContextualToolbar.current }
+						/>
+					</ChildToolbar>
 				) }
 
 				{
