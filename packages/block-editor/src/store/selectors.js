@@ -1352,6 +1352,10 @@ export function getBlockListSettings( state, clientId ) {
 	return state.blockListSettings[ clientId ];
 }
 
+export function __experimentalGetBlockListSettingsForBlocks( state, clientIds ) {
+	return filter( state.blockListSettings, ( value, key ) => clientIds.includes( key ) );
+}
+
 /**
  * Returns the editor settings.
  *
