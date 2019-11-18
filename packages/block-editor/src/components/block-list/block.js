@@ -2,7 +2,7 @@
  * External dependencies
  */
 import classnames from 'classnames';
-import { first, last } from 'lodash';
+import { first, last, findIndex } from 'lodash';
 import { animated } from 'react-spring/web.cjs';
 
 /**
@@ -78,6 +78,8 @@ function BlockListBlock( {
 	isEmptyDefaultBlock,
 	isMovable,
 	isAncestorOfSelectedBlock,
+	isCapturingDescendantToolbars,
+	hasAncestorCapturingToolbars,
 	isDraggable,
 	isSelectionEnabled,
 	className,
@@ -596,14 +598,14 @@ function BlockListBlock( {
 					/>
 				) }
 
-				{ isAncestorOfSelectedBlock && (
+				{ ( isCapturingDescendantToolbars || captureChildToolbar ) && (
 					// A slot made available on all ancestors of the selected Block
 					// to allow child Blocks to render their toolbars into the DOM
 					// of the appropriate parent.
 					<ChildToolbarSlot />
 				) }
 
-				{ ( ( ! captureChildToolbar && shouldShowContextualToolbar ) || isForcingContextualToolbar.current ) && (
+				{ ( ( ! ( captureChildToolbar || hasAncestorCapturingToolbars ) && shouldShowContextualToolbar ) || isForcingContextualToolbar.current ) && (
 					// Standard toolbar attached directly to the Block.
 					<BlockContextualToolbar
 						// If the toolbar is being shown because of being forced
@@ -613,7 +615,7 @@ function BlockListBlock( {
 
 				) }
 
-				{ captureChildToolbar && shouldShowContextualToolbar && (
+				{ ( captureChildToolbar || hasAncestorCapturingToolbars ) && shouldShowContextualToolbar && (
 					// If the parent Block is set to consume toolbars of the child Blocks
 					// then render the child Block's toolbar into the Slot provided
 					// by the parent.
@@ -714,6 +716,9 @@ const applyWithSelect = withSelect(
 			getBlockOrder,
 			__unstableGetBlockWithoutInnerBlocks,
 			isNavigationMode,
+			getBlockListSettings,
+			__experimentalGetBlockListSettingsForBlocks,
+			getBlockParents,
 		} = select( 'core/block-editor' );
 
 		const block = __unstableGetBlockWithoutInnerBlocks( clientId );
@@ -725,6 +730,23 @@ const applyWithSelect = withSelect(
 		const isAncestorOfSelectedBlock = hasSelectedInnerBlock( clientId, checkDeep );
 		const index = getBlockIndex( clientId, rootClientId );
 		const blockOrder = getBlockOrder( rootClientId );
+		const blockParentsClientIds = getBlockParents( clientId );
+		const currentBlockListSettings = getBlockListSettings( clientId );
+
+		// Get Block List Settings for all ancestors of the current Block clientId
+		const ancestorBlockListSettings = __experimentalGetBlockListSettingsForBlocks( blockParentsClientIds );
+
+		// Find the index of the first Block with the `captureDescendantsToolbars` prop defined
+		// This will be the top most ancestor because getBlockParents() returns tree from top -> bottom
+		const topmostAncestorWithCaptureDescendantsToolbarsIndex = findIndex( ancestorBlockListSettings, [ '__experimentalCaptureDescendantsToolbars', true ] );
+
+		// Boolean to indicate whether current Block has a parent with `captureDescendantsToolbars` set
+		const hasAncestorCapturingToolbars = topmostAncestorWithCaptureDescendantsToolbarsIndex !== -1 ? true : false;
+
+		// Is the *current* Block the one capturing all its descendant toolbars?
+		// If there is no `topmostAncestorWithCaptureDescendantsToolbarsIndex` then
+		// we're at the top of the tree
+		const isCapturingDescendantToolbars = isAncestorOfSelectedBlock && ( currentBlockListSettings && currentBlockListSettings.__experimentalCaptureDescendantsToolbars ) && ( topmostAncestorWithCaptureDescendantsToolbarsIndex === -1 );
 
 		// The fallback to `{}` is a temporary fix.
 		// This function should never be called when a block is not present in the state.
@@ -763,6 +785,8 @@ const applyWithSelect = withSelect(
 			isValid,
 			isSelected,
 			isAncestorOfSelectedBlock,
+			isCapturingDescendantToolbars,
+			hasAncestorCapturingToolbars,
 		};
 	}
 );
