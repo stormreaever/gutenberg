@@ -58,11 +58,8 @@ const updateLinkSetting = ( setter ) => ( setting, value ) => {
  * @param {Function} setter Setter attribute function.
  * @param {string} label Link label.
  */
-const updateLink = ( setter, label ) => ( { title: newTitle = '', url: newURL = '' } = {} ) => {
-	setter( {
-		title: newTitle,
-		url: newURL,
-	} );
+const updateLink = ( setter, label ) => ( { title: newTitle = '', url: newURL = '', id = -1 } = {} ) => {
+	setter( { title: newTitle,  url: newURL,  id } );
 
 	// Set the item label as well if it isn't already defined.
 	if ( ! label ) {
