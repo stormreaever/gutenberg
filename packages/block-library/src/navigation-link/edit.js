@@ -59,12 +59,14 @@ const updateLinkSetting = ( setter ) => ( setting, value ) => {
  * @param {string} label Link label.
  */
 const updateLink = ( setter, label ) => ( { title: newTitle = '', url: newURL = '', id = -1 } = {} ) => {
-	setter( { title: newTitle,  url: newURL,  id } );
+	const linkSetting = { title: newTitle,  url: newURL,  id };
 
 	// Set the item label as well if it isn't already defined.
 	if ( ! label ) {
-		setter( { label: newTitle } );
+		linkSetting.label = newTitle;
 	}
+
+	setter( linkSetting );
 };
 
 function NavigationLinkEdit( {
