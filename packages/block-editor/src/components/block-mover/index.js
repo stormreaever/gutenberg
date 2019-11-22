@@ -1,14 +1,14 @@
 /**
  * External dependencies
  */
-import { first, last, partial, castArray } from 'lodash';
+import { first, last, partial } from 'lodash';
 import classnames from 'classnames';
 
 /**
  * WordPress dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { IconButton } from '@wordpress/components';
+import { IconButton, Toolbar } from '@wordpress/components';
 import { getBlockType } from '@wordpress/blocks';
 import { Component } from '@wordpress/element';
 import { withSelect, withDispatch } from '@wordpress/data';
@@ -46,7 +46,7 @@ export class BlockMover extends Component {
 	render() {
 		const { onMoveUp, onMoveDown, __experimentalOrientation: orientation, isRTL, isFirst, isLast, clientIds, blockType, firstIndex, isLocked, instanceId, isHidden, rootClientId } = this.props;
 		const { isFocused } = this.state;
-		const blocksCount = castArray( clientIds ).length;
+		const blocksCount = clientIds.length;
 		if ( isLocked || ( isFirst && isLast && ! rootClientId ) ) {
 			return null;
 		}
@@ -86,7 +86,7 @@ export class BlockMover extends Component {
 		// to an unfocused state (body as active element) without firing blur on,
 		// the rendering parent, leaving it unable to react to focus out.
 		return (
-			<div className={ classnames( 'editor-block-mover block-editor-block-mover', { 'is-visible': isFocused || ! isHidden, 'is-horizontal': orientation === 'horizontal' } ) }>
+			<Toolbar className={ classnames( 'editor-block-mover block-editor-block-mover', { 'is-visible': isFocused || ! isHidden, 'is-horizontal': orientation === 'horizontal' } ) }>
 				<IconButton
 					className="editor-block-mover__control block-editor-block-mover__control"
 					onClick={ isFirst ? null : onMoveUp }
@@ -103,7 +103,7 @@ export class BlockMover extends Component {
 					{ ( { onDraggableStart, onDraggableEnd } ) => (
 						<IconButton
 							icon={ dragHandle }
-							className="block-editor-block-mover__control-drag-handle editor-block-mover__control block-editor-block-mover__control"
+							className="block-editor-block-mover__control-drag-handle"
 							aria-hidden="true"
 							onDragStart={ onDraggableStart }
 							onDragEnd={ onDraggableEnd }
@@ -151,7 +151,7 @@ export class BlockMover extends Component {
 						)
 					}
 				</span>
-			</div>
+			</Toolbar>
 		);
 	}
 }
@@ -159,13 +159,12 @@ export class BlockMover extends Component {
 export default compose(
 	withSelect( ( select, { clientIds } ) => {
 		const { getBlock, getBlockIndex, getTemplateLock, getBlockRootClientId, getBlockOrder } = select( 'core/block-editor' );
-		const normalizedClientIds = castArray( clientIds );
-		const firstClientId = first( normalizedClientIds );
+		const firstClientId = first( clientIds );
 		const block = getBlock( firstClientId );
-		const rootClientId = getBlockRootClientId( first( normalizedClientIds ) );
+		const rootClientId = getBlockRootClientId( first( clientIds ) );
 		const blockOrder = getBlockOrder( rootClientId );
 		const firstIndex = getBlockIndex( firstClientId, rootClientId );
-		const lastIndex = getBlockIndex( last( normalizedClientIds ), rootClientId );
+		const lastIndex = getBlockIndex( last( clientIds ), rootClientId );
 		const { getSettings } = select( 'core/block-editor' );
 		const {
 			isRTL,

@@ -36,7 +36,6 @@ import { compose, pure, ifCondition } from '@wordpress/compose';
  * Internal dependencies
  */
 import BlockEdit from '../block-edit';
-import BlockMover from '../block-mover';
 import BlockDropZone from '../block-drop-zone';
 import BlockInvalidWarning from './block-invalid-warning';
 import BlockCrashWarning from './block-crash-warning';
@@ -44,7 +43,6 @@ import BlockCrashBoundary from './block-crash-boundary';
 import BlockHtml from './block-html';
 import BlockBreadcrumb from './breadcrumb';
 import BlockContextualToolbar from './block-contextual-toolbar';
-import BlockMultiControls from './multi-controls';
 import BlockInsertionPoint from './insertion-point';
 import IgnoreNestedEvents from '../ignore-nested-events';
 import InserterWithShortcuts from '../inserter-with-shortcuts';
@@ -421,13 +419,7 @@ function BlockListBlock( {
 		! hasFixedToolbar &&
 		isHovered &&
 		! isEmptyDefaultBlock;
-	// We render block movers and block settings to keep them tabbale even if hidden
-	const shouldRenderMovers =
-		! isNavigationMode &&
-		isSelected &&
-		! showEmptyBlockSideInserter &&
-		! isPartOfMultiSelection &&
-		! isTypingWithinBlock;
+
 	const shouldShowBreadcrumb = isNavigationMode && isSelected;
 	const shouldShowContextualToolbar =
 		! isNavigationMode &&
@@ -478,13 +470,6 @@ function BlockListBlock( {
 		};
 	}
 	const blockElementId = `block-${ clientId }`;
-	const blockMover = (
-		<BlockMover
-			clientIds={ clientId }
-			isHidden={ ! isSelected }
-			__experimentalOrientation={ moverDirection }
-		/>
-	);
 
 	// We wrap the BlockEdit component in a div that hides it when editing in
 	// HTML mode. This allows us to render all of the ancillary pieces
@@ -541,23 +526,18 @@ function BlockListBlock( {
 					rootClientId={ rootClientId }
 				/>
 			) }
-			{ shouldRenderDropzone && <BlockDropZone
-				clientId={ clientId }
-				rootClientId={ rootClientId }
-			/> }
+			{ shouldRenderDropzone && (
+				<BlockDropZone
+					clientId={ clientId }
+					rootClientId={ rootClientId }
+				/>
+			) }
 			<div
 				className={ classnames(
 					'editor-block-list__block-edit block-editor-block-list__block-edit',
 					{ 'has-mover-inside': moverDirection === 'horizontal' },
 				) }
 			>
-				{ isFirstMultiSelected && (
-					<BlockMultiControls
-						rootClientId={ rootClientId }
-						moverDirection={ moverDirection }
-					/>
-				) }
-				{ shouldRenderMovers && ( moverDirection === 'vertical' ) && blockMover }
 				{ shouldShowBreadcrumb && (
 					<BlockBreadcrumb
 						clientId={ clientId }
@@ -598,7 +578,6 @@ function BlockListBlock( {
 						{ isValid && mode === 'html' && (
 							<BlockHtml clientId={ clientId } />
 						) }
-						{ shouldRenderMovers && ( moverDirection === 'horizontal' ) && blockMover }
 						{ ! isValid && [
 							<BlockInvalidWarning
 								key="invalid-warning"
