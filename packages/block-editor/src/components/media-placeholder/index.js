@@ -344,17 +344,16 @@ export class MediaPlaceholder extends Component {
 						render={ ( { openFileDialog } ) => {
 							const content = (
 								<>
-									<IconButton
+									<Button
 										isLarge
 										className={ classnames(
 											'block-editor-media-placeholder__button',
 											'editor-media-placeholder__button',
 											'block-editor-media-placeholder__upload-button'
 										) }
-										icon="upload"
 									>
 										{ __( 'Upload' ) }
-									</IconButton>
+									</Button>
 									{ mediaLibraryButton }
 									{ this.renderUrlSelectionUI() }
 									{ this.renderCancelLink() }

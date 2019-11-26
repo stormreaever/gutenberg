@@ -18,7 +18,13 @@ import Icon from '../icon';
  */
 function Placeholder( { icon, children, label, instructions, className, notices, preview, isColumnLayout, ...additionalProps } ) {
 	const [ resizeListener, { width } ] = useResizeAware();
-	const classes = classnames( 'components-placeholder', className );
+	const classes = classnames(
+		'components-placeholder',
+		( width >= 320 ? 'size-lg' : '' ),
+		( width >= 160 && width < 320 ? 'size-md' : '' ),
+		( width < 160 ? 'size-sm' : '' ),
+		className
+	);
 	const fieldsetClasses = classnames( 'components-placeholder__fieldset', { 'is-column-layout': isColumnLayout } );
 	return (
 		<div { ...additionalProps } className={ classes }>
@@ -33,7 +39,7 @@ function Placeholder( { icon, children, label, instructions, className, notices,
 				<Icon icon={ icon } />
 				{ label }
 			</div>
-			{ !! instructions && ( width === null || width >= 320 ) && <div className="components-placeholder__instructions">{ instructions }</div> }
+			{ !! instructions && <div className="components-placeholder__instructions">{ instructions }</div> }
 			<div className={ fieldsetClasses }>
 				{ children }
 			</div>
