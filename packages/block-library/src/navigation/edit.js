@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { escape, reduce, map, filter } from 'lodash';
+import { escape, reduce, map, filter, difference, concat } from 'lodash';
 import useSWR from 'use-swr';
 
 /**
@@ -11,6 +11,7 @@ import {
 	useMemo,
 	Fragment,
 	useEffect,
+	useState,
 } from '@wordpress/element';
 import {
 	InnerBlocks,
@@ -66,6 +67,7 @@ function Navigation( {
 	setAttributes,
 	hasExistingNavItems,
 	updateNavItemBlocks,
+	innerBlocks,
 } ) {
 	/* eslint-disable @wordpress/no-unused-vars-before-return */
 	const { TextColor } = __experimentalUseColors(
@@ -73,6 +75,10 @@ function Navigation( {
 	);
 	/* eslint-enable @wordpress/no-unused-vars-before-return */
 	const { navigatorToolbarButton, navigatorModal } = useBlockNavigator( clientId );
+
+	const [ unaddedItems, setUnaddedItems ] = useState( [] );
+
+	const [ populateFromExistingPages, setPopulateFromExistingPages ] = useState( false );
 
 	/**
 	 * Fetching data.
@@ -86,30 +92,65 @@ function Navigation( {
 		, doFetch
 	);
 
-	// Builds navigation links from default Pages.
-	const defaultPagesNavigationItems = useMemo(
-		() => {
-			if ( ! pages ) {
-				return null;
-			}
+	/**
+	 * Items checker.
+	 * Checks if the current Navigation menu has duplicated and unadded items,
+	 * building an object with the following shape:
+	 *
+	 *   {
+	 *     items: {
+	 *         <page-id>: <count>, -> Amount of items with this ID. Generally this value is `1`.
+	 *         ...: n,
+	 *     },
+	 *     ids: [ <page-id>, ... ], -> Current items with the pages ids,
+	 *     repeated: [ <page-id>, ... ], -> All of repeated items with the same page ID,
+	 *     unadded: [ <page-id>, ... ], -> Page IDs which have not been added to the nav.
+	 * }
+	 */
+	useEffect( () => {
+		const itemsChecker = reduce(
+			map(
+				filter( innerBlocks, ( { attributes: attrs } ) => attrs.id && attrs.id >= 0 ),
+				( { attributes } ) => ( {
+					id: attributes.id,
+				} )
+			),
+			( acc, item ) => ( {
+				items: { ...acc.items, [ item.id ]: acc.items[ item.id ] ? acc.items[ item.id ] + 1 : 1 },
+				ids: [ ...acc.ids, item.id ],
+				repeated: acc.items[ item.id ] ? [ ...acc.repeated, item.id ] : acc.repeated,
+			} ),
+			{ items: {}, ids: [], repeated: [] }
+		);
 
-			return pages.map( ( { title, type, url, id } ) => (
-				createBlock(
-					'core/navigation-link',
-					{ type,  id,  url,  label: escape( title ), title: escape( title ),  opensInNewTab: false }
+		itemsChecker.unadded = difference( map( pages, ( { id } ) => ( id ) ), itemsChecker.ids );
+
+		if ( itemsChecker.unadded.length ) {
+			setUnaddedItems(
+				concat(
+					map( itemsChecker.unadded, ( id ) => {
+						const { type, url, title } = filter( pages, ( { id: page_id } ) => page_id === id )[0];
+						return createBlock(
+							'core/navigation-link',
+							{ type, id, url, label: escape(title), title: escape(title), opensInNewTab: false }
+						)
+					} ),
+					innerBlocks
 				)
-			) );
-		},
-		[ pages ]
-	);
+			);
+		}
+	}, [ pages, innerBlocks ] );
+
+	useEffect( () => {
+	    if ( populateFromExistingPages ) {
+		    updateNavItemBlocks( unaddedItems );
+	    }
+	}, [ populateFromExistingPages, unaddedItems ] );
+
 
 	const handleCreateEmpty = () => {
 		const emptyNavLinkBlock = createBlock( 'core/navigation-link' );
 		updateNavItemBlocks( [ emptyNavLinkBlock ] );
-	};
-
-	const handleCreateFromExistingPages = () => {
-		updateNavItemBlocks( defaultPagesNavigationItems );
 	};
 
 	const hasPages = pages && pages.length;
@@ -147,7 +188,7 @@ function Navigation( {
 						<Button
 							isDefault
 							className="wp-block-navigation-placeholder__button"
-							onClick={ handleCreateFromExistingPages }
+							onClick={ () => setPopulateFromExistingPages( true ) }
 							disabled={ ! hasPages }
 						>
 							{ __( 'Create from all top pages' ) }
