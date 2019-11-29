@@ -612,7 +612,6 @@ function BlockListBlock( {
 							// If the toolbar is being shown because of being forced
 							// it should focus the toolbar right after the mount.
 							focusOnMount={ isForcingContextualToolbar.current }
-							showBlockTitle={ true }
 						/>
 					</ChildToolbar>
 				) }
