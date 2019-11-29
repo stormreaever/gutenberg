@@ -72,6 +72,13 @@ function FontSizePicker( {
 		onChange( selectedItem.style && selectedItem.style.fontSize );
 	};
 
+	const reset = () => {
+		const defaultFontSize = items.find( ( item ) => item.key === DEFAULT_FONT_SIZE );
+		onSelectChangeValue( {
+			selectedItem: defaultFontSize,
+		} );
+	};
+
 	const items = getSelectOptions( fontSizes );
 	const rangeControlNumberId = `components-range-control__number#${ instanceId }`;
 	return (
@@ -106,7 +113,7 @@ function FontSizePicker( {
 					className="components-color-palette__clear"
 					type="button"
 					disabled={ value === undefined }
-					onClick={ () => onSelectChangeValue( DEFAULT_FONT_SIZE ) }
+					onClick={ reset }
 					isSmall
 					isDefault
 				>
