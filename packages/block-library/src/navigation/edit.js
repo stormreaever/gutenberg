@@ -1,7 +1,8 @@
 /**
  * External dependencies
  */
-import { escape } from 'lodash';
+import { escape, reduce, map, filter } from 'lodash';
+import useSWR from 'use-swr';
 
 /**
  * WordPress dependencies
@@ -9,6 +10,7 @@ import { escape } from 'lodash';
 import {
 	useMemo,
 	Fragment,
+	useEffect,
 } from '@wordpress/element';
 import {
 	InnerBlocks,
@@ -16,6 +18,9 @@ import {
 	BlockControls,
 	__experimentalUseColors,
 } from '@wordpress/block-editor';
+import apiFetch from '@wordpress/api-fetch';
+import { addQueryArgs } from '@wordpress/url';
+import { decodeEntities } from '@wordpress/html-entities';
 
 import { createBlock } from '@wordpress/blocks';
 import { withSelect, withDispatch } from '@wordpress/data';
@@ -38,25 +43,48 @@ import useBlockNavigator from './use-block-navigator';
 import BlockNavigationList from './block-navigation-list';
 import BlockColorsStyleSelector from './block-colors-selector';
 
+/**
+ * ASync/Await fetch handler.
+ *
+ * @param {string} path fetching path.
+ * @return {Promise<*>}
+ */
+const doFetch = async function( path ) {
+	const posts = await apiFetch( { path } );
+
+	return await map( posts, ( { id, link: url, title, type, subtype } ) => ( {
+		id,
+		url,
+		title: decodeEntities( title.rendered ) || __( '(no title)' ),
+		type: subtype || type,
+	} ) );
+};
+
 function Navigation( {
 	attributes,
 	clientId,
-	pages,
-	isRequestingPages,
-	hasResolvedPages,
 	setAttributes,
 	hasExistingNavItems,
 	updateNavItemBlocks,
 } ) {
-	//
-	// HOOKS
-	//
 	/* eslint-disable @wordpress/no-unused-vars-before-return */
 	const { TextColor } = __experimentalUseColors(
 		[ { name: 'textColor', property: 'color' } ],
 	);
 	/* eslint-enable @wordpress/no-unused-vars-before-return */
 	const { navigatorToolbarButton, navigatorModal } = useBlockNavigator( clientId );
+
+	/**
+	 * Fetching data.
+	 */
+	const { data: pages, isValidating: isRequestingPages,  } = useSWR(
+		addQueryArgs( '/wp/v2/pages', {
+			parent: 0,
+			order: 'asc',
+			orderby: 'id',
+		} )
+		, doFetch
+	);
 
 	// Builds navigation links from default Pages.
 	const defaultPagesNavigationItems = useMemo(
@@ -65,25 +93,15 @@ function Navigation( {
 				return null;
 			}
 
-			return pages.map( ( { title, type, link: url, id } ) => (
-				createBlock( 'core/navigation-link',
-					{
-						type,
-						id,
-						url,
-						label: escape( title.rendered ),
-						title: escape( title.raw ),
-						opensInNewTab: false,
-					}
+			return pages.map( ( { title, type, url, id } ) => (
+				createBlock(
+					'core/navigation-link',
+					{ type,  id,  url,  label: escape( title ), title: escape( title ),  opensInNewTab: false }
 				)
 			) );
 		},
 		[ pages ]
 	);
-
-	//
-	// HANDLERS
-	//
 
 	const handleCreateEmpty = () => {
 		const emptyNavLinkBlock = createBlock( 'core/navigation-link' );
@@ -94,7 +112,7 @@ function Navigation( {
 		updateNavItemBlocks( defaultPagesNavigationItems );
 	};
 
-	const hasPages = hasResolvedPages && pages && pages.length;
+	const hasPages = pages && pages.length;
 
 	// If we don't have existing items or the User hasn't
 	// indicated they want to automatically add top level Pages
@@ -103,7 +121,7 @@ function Navigation( {
 		return (
 			<Fragment>
 				<InspectorControls>
-					{ hasResolvedPages && (
+					{ ! isRequestingPages && (
 						<PanelBody
 							title={ __( 'Navigation Settings' ) }
 						>
@@ -199,20 +217,9 @@ function Navigation( {
 export default compose( [
 	withSelect( ( select, { clientId } ) => {
 		const innerBlocks = select( 'core/block-editor' ).getBlocks( clientId );
-
-		const filterDefaultPages = {
-			parent: 0,
-			order: 'asc',
-			orderby: 'id',
-		};
-
-		const pagesSelect = [ 'core', 'getEntityRecords', [ 'postType', 'page', filterDefaultPages ] ];
-
 		return {
+			innerBlocks,
 			hasExistingNavItems: !! innerBlocks.length,
-			pages: select( 'core' ).getEntityRecords( 'postType', 'page', filterDefaultPages ),
-			isRequestingPages: select( 'core/data' ).isResolving( ...pagesSelect ),
-			hasResolvedPages: select( 'core/data' ).hasFinishedResolution( ...pagesSelect ),
 		};
 	} ),
 	withDispatch( ( dispatch, { clientId } ) => {
