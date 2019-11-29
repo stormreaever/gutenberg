@@ -100,7 +100,7 @@ const URLInput = ( {
 		};
 	};
 
-	const updateSuggestionsHanlder = ( value ) => {
+	const updateSuggestionsHandler = ( value ) => {
 		if ( ! fetchLinkSuggestions ) {
 			return;
 		}
@@ -149,7 +149,7 @@ const URLInput = ( {
 		suggestionsRequest = request;
 	};
 
-	const updateSuggestions = throttle( updateSuggestionsHanlder, 200 );
+	const updateSuggestions = throttle( updateSuggestionsHandler, 200 );
 
 	const selectLink = ( suggestion ) => {
 		onChange( suggestion.url, suggestion );
