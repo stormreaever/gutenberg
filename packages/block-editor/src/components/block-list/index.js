@@ -225,7 +225,6 @@ class BlockList extends Component {
 			renderAppender,
 			enableAnimation,
 			isMultiSelecting,
-			__experimentalCaptureChildToolbar: captureChildToolbar,
 		} = this.props;
 
 		return (
@@ -259,7 +258,6 @@ class BlockList extends Component {
 								// otherwise there might be a small delay to trigger the animation.
 								animateOnChange={ index }
 								enableAnimation={ enableAnimation }
-								__experimentalCaptureChildToolbar={ captureChildToolbar }
 							/>
 						</BlockAsyncModeProvider>
 					);
