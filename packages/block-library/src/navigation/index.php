@@ -127,19 +127,28 @@ function register_block_core_navigation() {
 		'core/navigation',
 		array(
 			'attributes'      => array(
-				'className'        => array(
+				'className'          => array(
 					'type' => 'string',
 				),
-				'automaticallyAdd' => array(
+				'automaticallyAdd'   => array(
 					'type'    => 'boolean',
 					'default' => false,
 				),
-				'textColor'        => array(
+				'textColor'          => array(
 					'type' => 'string',
 				),
-				'customTextColor'  => array(
+				'customTextColor'    => array(
 					'type' => 'string',
 				),
+				'items' => array(
+					'type'    => 'array',
+					'default' => array(
+						'ids'      => array(),
+						'items'    => array(),
+						'unadded'  => array(),
+						'repeated' => array(),
+					)
+				)
 			),
 
 			'render_callback' => 'render_block_navigation',

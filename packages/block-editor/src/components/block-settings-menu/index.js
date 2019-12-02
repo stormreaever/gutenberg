@@ -36,17 +36,17 @@ export function BlockSettingsMenu( { clientIds } ) {
 	const firstBlockClientId = blockClientIds[ 0 ];
 
 	return (
-		<BlockActions clientIds={ clientIds }>
-			{ ( {
-				canDuplicate,
-				canInsertDefaultBlock,
-				isLocked,
-				onDuplicate,
-				onInsertAfter,
-				onInsertBefore,
-				onRemove,
-			} ) => (
-				<Toolbar>
+<BlockActions clientIds={ clientIds }>
+	{ ( {
+		canDuplicate,
+		canInsertDefaultBlock,
+		isLocked,
+		onDuplicate,
+		onInsertAfter,
+		onInsertBefore,
+		onRemove,
+	} ) => (
+		<Toolbar>
 					<DropdownMenu
 						icon="ellipsis"
 						label={ __( 'More options' ) }
