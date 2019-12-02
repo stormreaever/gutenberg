@@ -188,8 +188,6 @@ function Navigation( {
 						allowedBlocks={ [ 'core/navigation-link' ] }
 						templateInsertUpdatesSelection={ false }
 						__experimentalMoverDirection={ 'horizontal' }
-						__experimentalCaptureChildToolbar={ false }
-						__experimentalCaptureDescendantsToolbars={ true }
 					/>
 
 				</div>
