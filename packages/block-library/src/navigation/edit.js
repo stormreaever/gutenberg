@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { escape, reduce, map, filter, difference, concat } from 'lodash';
-import useSWR from 'use-swr';
 
 /**
  * WordPress dependencies
@@ -18,9 +17,6 @@ import {
 	BlockControls,
 	__experimentalUseColors,
 } from '@wordpress/block-editor';
-import apiFetch from '@wordpress/api-fetch';
-import { addQueryArgs } from '@wordpress/url';
-import { decodeEntities } from '@wordpress/html-entities';
 
 import { createBlock } from '@wordpress/blocks';
 import { withSelect, withDispatch } from '@wordpress/data';
@@ -42,23 +38,8 @@ import { __ } from '@wordpress/i18n';
 import useBlockNavigator from './use-block-navigator';
 import BlockNavigationList from './block-navigation-list';
 import BlockColorsStyleSelector from './block-colors-selector';
+import { useQueryPages } from './use-query';
 
-/**
- * ASync/Await fetch handler.
- *
- * @param {string} path fetching path.
- * @return {Promise<*>}
- */
-const doFetch = async function( path ) {
-	const posts = await apiFetch( { path } );
-
-	return await map( posts, ( { id, link: url, title, type, subtype } ) => ( {
-		id,
-		url,
-		title: decodeEntities( title.rendered ) || __( '(no title)' ),
-		type: subtype || type,
-	} ) );
-};
 
 function Navigation( {
 	attributes,
@@ -82,14 +63,13 @@ function Navigation( {
 	/**
 	 * Fetching data.
 	 */
-	const { data: pages, isValidating: isRequestingPages,  } = useSWR(
-		addQueryArgs( '/wp/v2/pages', {
-			parent: 0,
-			order: 'asc',
-			orderby: 'id',
-		} )
-		, doFetch
-	);
+	const { data: pages, isValidating: isRequestingPages,  } = useQueryPages( {
+		parent: 0,
+		order: 'asc',
+		orderby: 'id',
+	} );
+
+	console.log( { pages } );
 
 	/**
 	 * Items checker.
