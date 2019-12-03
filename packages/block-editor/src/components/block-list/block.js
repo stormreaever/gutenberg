@@ -21,7 +21,7 @@ import {
 	isReusableBlock,
 	isUnmodifiedDefaultBlock,
 	getUnregisteredTypeHandlerName,
-	__experimentalGetBlockLabel,
+	__experimentalGetAccessibileBlockLabel as getAccessibleBlockLabel,
 } from '@wordpress/blocks';
 import { KeyboardShortcuts, withFilters } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
@@ -412,7 +412,7 @@ function BlockListBlock( {
 	const blockType = getBlockType( name );
 
 	// translators: %s: Type of block (i.e. Text, Image etc)
-	const blockLabel = sprintf( __( 'Block: %s' ), __experimentalGetBlockLabel( blockType, attributes, ' - ' ) );
+	const blockAriaLabel = sprintf( __( 'Block: %s' ), getAccessibleBlockLabel( blockType, attributes, ' - ' ) );
 
 	const isUnregisteredBlock = name === getUnregisteredTypeHandlerName();
 
@@ -539,7 +539,7 @@ function BlockListBlock( {
 			onClick={ onTouchStop }
 			onKeyDown={ onKeyDown }
 			tabIndex="0"
-			aria-label={ blockLabel }
+			aria-label={ blockAriaLabel }
 			childHandledEvents={ [ 'onDragStart', 'onMouseDown' ] }
 			tagName={ animated.div }
 			{ ...wrapperProps }

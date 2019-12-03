@@ -9,7 +9,10 @@ import classnames from 'classnames';
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { IconButton } from '@wordpress/components';
-import { getBlockType, __experimentalGetBlockLabel } from '@wordpress/blocks';
+import {
+	getBlockType,
+	__experimentalGetAccessibileBlockLabel as getAccessibleBlockLabel,
+} from '@wordpress/blocks';
 import { Component } from '@wordpress/element';
 import { withSelect, withDispatch } from '@wordpress/data';
 import { withInstanceId, compose } from '@wordpress/compose';
@@ -205,7 +208,7 @@ export default compose(
 		const blockAttributes = getBlockAttributes( firstClientId );
 
 		return {
-			blockLabel: __experimentalGetBlockLabel( blockType, blockAttributes ),
+			blockLabel: getAccessibleBlockLabel( blockType, blockAttributes ),
 			isLocked: getTemplateLock( rootClientId ) === 'all',
 			rootClientId,
 			firstIndex,

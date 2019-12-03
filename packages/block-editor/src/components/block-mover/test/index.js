@@ -32,7 +32,7 @@ describe( 'BlockMover', () => {
 			expect( console ).toHaveWarned();
 
 			const moveUpDesc = blockMover.childAt( 3 );
-			expect( moveUpDesc.text() ).toBe( "Move 'Header' block from position 1 up to position 0" );
+			expect( moveUpDesc.text() ).toBe( 'Move Header block from position 1 up to position 0' );
 		} );
 
 		it( 'should render three icons with the following props', () => {

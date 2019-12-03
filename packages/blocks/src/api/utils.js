@@ -124,17 +124,15 @@ export function normalizeBlockType( blockTypeOrName ) {
 }
 
 /**
- * Get the block label, using the block title and display name if it has one.
- * Use only the block title if it doesn't have a display name.
+ * Get a visual label for the block, usually this is either the block title,
+ * or the value of the `displayLabel` attribute when that's specified.
  *
  * @param {Object}  blockType  The block type.
  * @param {Object}  attributes The values of the block's attributes.
- * @param {?string} separator  A separator to display between the title and
- *                             displayName. Defaults to a colon (': ').
  *
  * @return {string} The block label.
  */
-export function getBlockLabel( blockType, attributes, separator = ': ' ) {
+export function getVisualBlockLabel( blockType, attributes ) {
 	const {
 		__experimentalDisplayName: displayNameAttribute,
 		title: blockTitle,
@@ -148,5 +146,29 @@ export function getBlockLabel( blockType, attributes, separator = ': ' ) {
 	const richTextValue = create( { html: attributes[ displayNameAttribute ] } );
 	const formatlessDisplayName = getTextContent( richTextValue );
 
-	return `${ blockTitle }${ separator }${ formatlessDisplayName }`;
+	return formatlessDisplayName;
+}
+
+/**
+ * Get a label for the block for use by screenreaders, this is more descriptive
+ * than the visual label and includes the blockTitle and the value of the
+ * `displayLabel` attribute.
+ *
+ * @param {Object}  blockType  The block type.
+ * @param {Object}  attributes The values of the block's attributes.
+ * @param {?string} separator  A separator to display between the title and
+ *                             displayName. Defaults to a colon (': ').
+ *
+ * @return {string} The block label.
+ */
+export function getAccessibileBlockLabel( blockType, attributes, separator = ': ' ) {
+	const { title: blockTitle } = blockType;
+
+	const blockLabel = getVisualBlockLabel( blockType, attributes );
+
+	if ( blockTitle === blockLabel ) {
+		return blockTitle;
+	}
+
+	return `${ blockTitle }${ separator }${ blockLabel }`;
 }
