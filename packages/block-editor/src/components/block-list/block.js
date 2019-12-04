@@ -24,7 +24,6 @@ import {
 	__experimentalGetAccessibleBlockLabel as getAccessibleBlockLabel,
 } from '@wordpress/blocks';
 import { KeyboardShortcuts, withFilters } from '@wordpress/components';
-import { __, sprintf } from '@wordpress/i18n';
 import {
 	withDispatch,
 	withSelect,
@@ -411,9 +410,7 @@ function BlockListBlock( {
 	const isHovered = isBlockHovered && ! isPartOfMultiSelection;
 	const blockType = getBlockType( name );
 
-	// translators: %s: Type of block (i.e. Text, Image etc)
-	const blockAriaLabel = sprintf( __( 'Block: %s' ), getAccessibleBlockLabel( blockType, attributes, ' - ' ) );
-
+	const blockAriaLabel = getAccessibleBlockLabel( blockType, attributes );
 	const isUnregisteredBlock = name === getUnregisteredTypeHandlerName();
 
 	// If the block is selected and we're typing the block should not appear.

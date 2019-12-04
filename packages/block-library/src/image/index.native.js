@@ -12,7 +12,7 @@ export { metadata, name } from './index.js';
 
 export const settings = {
 	...webSettings,
-	__experimentalGetAccessibilityLabel( attributes ) {
+	__experimentalGetLabel( attributes ) {
 		const { caption, alt, url } = attributes;
 
 		if ( ! url ) {

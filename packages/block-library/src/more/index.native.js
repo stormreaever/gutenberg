@@ -7,7 +7,7 @@ export { metadata, name } from './index.js';
 
 export const settings = {
 	...webSettings,
-	__experimentalGetAccessibilityLabel( attributes ) {
+	__experimentalGetLabel( attributes ) {
 		return attributes.customText;
 	},
 };

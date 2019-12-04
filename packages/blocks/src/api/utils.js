@@ -8,6 +8,7 @@ import { default as tinycolor, mostReadable } from 'tinycolor2';
  * WordPress dependencies
  */
 import { Component, isValidElement } from '@wordpress/element';
+import { __, sprintf } from '@wordpress/i18n';
 import { create, getTextContent } from '@wordpress/rich-text';
 
 /**
@@ -134,16 +135,18 @@ export function normalizeBlockType( blockTypeOrName ) {
  */
 export function getVisualBlockLabel( blockType, attributes ) {
 	const {
-		__experimentalDisplayName: displayNameAttribute,
+		__experimentalGetLabel: getLabel,
 		title: blockTitle,
 	} = blockType;
 
-	if ( ! displayNameAttribute || ! attributes[ displayNameAttribute ] ) {
+	const label = getLabel && getLabel( attributes );
+
+	if ( ! label ) {
 		return blockTitle;
 	}
 
 	// Strip any formatting.
-	const richTextValue = create( { html: attributes[ displayNameAttribute ] } );
+	const richTextValue = create( { html: label } );
 	const formatlessDisplayName = getTextContent( richTextValue );
 
 	return formatlessDisplayName;
@@ -156,19 +159,48 @@ export function getVisualBlockLabel( blockType, attributes ) {
  *
  * @param {Object}  blockType  The block type.
  * @param {Object}  attributes The values of the block's attributes.
- * @param {?string} separator  A separator to display between the title and
- *                             displayName. Defaults to a colon (': ').
+ * @param {?number} row        The row of the block in the block list.
  *
  * @return {string} The block label.
  */
-export function getAccessibleBlockLabel( blockType, attributes, separator = ': ' ) {
+export function getAccessibleBlockLabel( blockType, attributes, row ) {
+	// `blockTitle` is already localized, `label` is a user-supplied value.
 	const { title: blockTitle } = blockType;
+	const label = getVisualBlockLabel( blockType, attributes );
+	const hasRow = row !== undefined;
+	const hasLabel = label && label !== blockTitle;
 
-	const blockLabel = getVisualBlockLabel( blockType, attributes );
+	if ( hasRow ) {
+		if ( hasLabel ) {
+			return sprintf(
+				/* translators: accessibility text. %s: block title, %d block row number, $s block label.. */
+				__( '%s Block. Row %d. %s' ),
+				blockTitle,
+				row,
+				label
+			);
+		}
 
-	if ( blockTitle === blockLabel ) {
-		return blockTitle;
+		return sprintf(
+			/* translators: accessibility text. %s: block title, %d block row number. */
+			__( '%s Block. Row %d' ),
+			blockTitle,
+			row,
+		);
 	}
 
-	return `${ blockTitle }${ separator }${ blockLabel }`;
+	if ( hasLabel ) {
+		return sprintf(
+			/* translators: accessibility text. %s: block title. $s block label. */
+			__( '%s Block. %s' ),
+			blockTitle,
+			label
+		);
+	}
+
+	return sprintf(
+		/* translators: accessibility text. %s: block title. */
+		__( '%s Block' ),
+		blockTitle
+	);
 }

@@ -101,83 +101,77 @@ describe( 'block helpers', () => {
 	} );
 } );
 
-describe( 'getAccessibleBlockLabel', () => {
-	it( 'returns only the block title when the block has no display name', () => {
-		const blockType = { title: 'Recipe' };
-		const attributes = {};
-
-		expect( getAccessibleBlockLabel( blockType, attributes ) ).toBe( 'Recipe' );
-	} );
-
-	it( 'returns only the block title when the block has a display name, but the attribute is undefined', () => {
-		const blockType = { title: 'Recipe', __experimentalDisplayName: 'heading' };
-		const attributes = {};
-
-		expect( getAccessibleBlockLabel( blockType, attributes ) ).toBe( 'Recipe' );
-	} );
-
-	it( 'returns only the block title when the block has a display name, but the attribute is an empty string', () => {
-		const blockType = { title: 'Recipe', __experimentalDisplayName: 'heading' };
-		const attributes = { heading: '' };
-
-		expect( getAccessibleBlockLabel( blockType, attributes ) ).toBe( 'Recipe' );
-	} );
-
-	it( 'returns the block title with the display name when the display name and its attribute are defined', () => {
-		const blockType = { title: 'Recipe', __experimentalDisplayName: 'heading' };
-		const attributes = { heading: 'Cupcakes!' };
-
-		expect( getAccessibleBlockLabel( blockType, attributes ) ).toBe( 'Recipe: Cupcakes!' );
-	} );
-
-	it( 'removes any html elements from the display name attribute', () => {
-		const blockType = { title: 'Recipe', __experimentalDisplayName: 'heading' };
-		const attributes = { heading: '<b><span class="my-class">Cupcakes!</span></b>' };
-
-		expect( getAccessibleBlockLabel( blockType, attributes ) ).toBe( 'Recipe: Cupcakes!' );
-	} );
-
-	it( 'allows specification of a custom separator', () => {
-		const blockType = { title: 'Recipe', __experimentalDisplayName: 'heading' };
-		const attributes = { heading: 'Cupcakes!' };
-
-		expect( getAccessibleBlockLabel( blockType, attributes, ' - ' ) ).toBe( 'Recipe - Cupcakes!' );
-	} );
-} );
-
 describe( 'getVisualBlockLabel', () => {
-	it( 'returns only the block title when the block has no display name', () => {
+	it( 'returns only the block title when the block has no `getLabel` function', () => {
 		const blockType = { title: 'Recipe' };
 		const attributes = {};
 
 		expect( getVisualBlockLabel( blockType, attributes ) ).toBe( 'Recipe' );
 	} );
 
-	it( 'returns only the block title when the block has a display name, but the attribute is undefined', () => {
-		const blockType = { title: 'Recipe', __experimentalDisplayName: 'heading' };
+	it( 'returns only the block title when the block has a `getLabel` function, but it returns a falsey value', () => {
+		const blockType = { title: 'Recipe', __experimentalGetLabel: () => '' };
 		const attributes = {};
 
 		expect( getVisualBlockLabel( blockType, attributes ) ).toBe( 'Recipe' );
 	} );
 
-	it( 'returns only the block title when the block has a display name, but the attribute is an empty string', () => {
-		const blockType = { title: 'Recipe', __experimentalDisplayName: 'heading' };
-		const attributes = { heading: '' };
-
-		expect( getVisualBlockLabel( blockType, attributes ) ).toBe( 'Recipe' );
-	} );
-
-	it( 'returns the display name when the display name and its attribute are defined', () => {
-		const blockType = { title: 'Recipe', __experimentalDisplayName: 'heading' };
+	it( 'returns the block title with the label when the `getLabel` function returns a value', () => {
+		const blockType = { title: 'Recipe', __experimentalGetLabel: ( { heading } ) => heading };
 		const attributes = { heading: 'Cupcakes!' };
 
 		expect( getVisualBlockLabel( blockType, attributes ) ).toBe( 'Cupcakes!' );
 	} );
 
-	it( 'removes any html elements from the display name attribute', () => {
-		const blockType = { title: 'Recipe', __experimentalDisplayName: 'heading' };
+	it( 'removes any html elements from the output of the `getLabel` function', () => {
+		const blockType = { title: 'Recipe', __experimentalGetLabel: ( { heading } ) => heading };
 		const attributes = { heading: '<b><span class="my-class">Cupcakes!</span></b>' };
 
 		expect( getVisualBlockLabel( blockType, attributes ) ).toBe( 'Cupcakes!' );
 	} );
 } );
+
+describe( 'getAccessibleBlockLabel', () => {
+	it( 'returns only the block title when the block has no `getLabel` function', () => {
+		const blockType = { title: 'Recipe' };
+		const attributes = {};
+
+		expect( getAccessibleBlockLabel( blockType, attributes ) ).toBe( 'Recipe Block' );
+	} );
+
+	it( 'returns only the block title when the block has a `getLabel` function, but it returns a falsey value', () => {
+		const blockType = { title: 'Recipe', __experimentalGetLabel: () => '' };
+		const attributes = {};
+
+		expect( getAccessibleBlockLabel( blockType, attributes ) ).toBe( 'Recipe Block' );
+	} );
+
+	it( 'returns the block title with the label when the `getLabel` function returns a value', () => {
+		const blockType = { title: 'Recipe', __experimentalGetLabel: ( { heading } ) => heading };
+		const attributes = { heading: 'Cupcakes!' };
+
+		expect( getAccessibleBlockLabel( blockType, attributes ) ).toBe( 'Recipe Block. Cupcakes!' );
+	} );
+
+	it( 'removes any html elements from the output of the `getLabel` function', () => {
+		const blockType = { title: 'Recipe', __experimentalGetLabel: ( { heading } ) => heading };
+		const attributes = { heading: '<b><span class="my-class">Cupcakes!</span></b>' };
+
+		expect( getAccessibleBlockLabel( blockType, attributes ) ).toBe( 'Recipe Block. Cupcakes!' );
+	} );
+
+	it( 'outputs the block title and label with a row number indicating the position of the block, when the optional third parameter is provided', () => {
+		const blockType = { title: 'Recipe', __experimentalGetLabel: ( { heading } ) => heading };
+		const attributes = { heading: 'Cupcakes!' };
+
+		expect( getAccessibleBlockLabel( blockType, attributes, 3 ) ).toBe( 'Recipe Block. Row 3. Cupcakes!' );
+	} );
+
+	it( 'outputs just the block title and row number when there no label is available for the block', () => {
+		const blockType = { title: 'Recipe' };
+		const attributes = {};
+
+		expect( getAccessibleBlockLabel( blockType, attributes, 3 ) ).toBe( 'Recipe Block. Row 3' );
+	} );
+} );
+

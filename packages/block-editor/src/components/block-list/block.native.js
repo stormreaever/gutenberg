@@ -14,8 +14,11 @@ import { Component } from '@wordpress/element';
 import { ToolbarButton, Toolbar } from '@wordpress/components';
 import { withDispatch, withSelect } from '@wordpress/data';
 import { compose } from '@wordpress/compose';
-import { getBlockType } from '@wordpress/blocks';
-import { __, sprintf } from '@wordpress/i18n';
+import {
+	getBlockType,
+	__experimentalGetAccessibleBlockLabel as getAccessibleBlockLabel,
+} from '@wordpress/blocks';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -80,39 +83,17 @@ class BlockListBlock extends Component {
 		);
 	}
 
-	getAccessibilityLabel() {
-		const { attributes, name, order, title, getAccessibilityLabelExtra } = this.props;
-
-		let blockName = '';
-
-		if ( name === 'core/missing' ) { // is the block unrecognized?
-			blockName = title;
-		} else {
-			blockName = sprintf(
-				/* translators: accessibility text. %s: block name. */
-				__( '%s Block' ),
-				title, //already localized
-			);
-		}
-
-		blockName += '. ' + sprintf( __( 'Row %d.' ), order + 1 );
-
-		if ( getAccessibilityLabelExtra ) {
-			const blockAccessibilityLabel = getAccessibilityLabelExtra( attributes );
-			blockName += blockAccessibilityLabel ? ' ' + blockAccessibilityLabel : '';
-		}
-
-		return blockName;
-	}
-
 	render() {
 		const {
+			attributes,
 			borderStyle,
+			blockType,
 			clientId,
 			focusedBorderColor,
 			icon,
 			isSelected,
 			isValid,
+			order,
 			showTitle,
 			title,
 			showFloatingToolbar,
@@ -122,8 +103,7 @@ class BlockListBlock extends Component {
 
 		const borderColor = isSelected ? focusedBorderColor : 'transparent';
 
-		const accessibilityLabel = this.getAccessibilityLabel();
-
+		const accessibilityLabel = getAccessibleBlockLabel( blockType, attributes, order + 1 );
 		return (
 			<>
 				{ showFloatingToolbar && ( ! isFirstBlock || parentId === '' ) && <FloatingToolbar.Slot /> }
@@ -185,7 +165,6 @@ export default compose( [
 		const blockType = getBlockType( name || 'core/missing' );
 		const title = blockType.title;
 		const icon = blockType.icon;
-		const getAccessibilityLabelExtra = blockType.__experimentalGetAccessibilityLabel;
 
 		const selectedBlock = getSelectedBlock();
 		const parentId = getBlockRootClientId( clientId );
@@ -211,7 +190,6 @@ export default compose( [
 			isLastBlock,
 			isSelected,
 			isValid,
-			getAccessibilityLabelExtra,
 			showFloatingToolbar,
 			parentId,
 		};
