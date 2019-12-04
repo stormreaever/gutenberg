@@ -57,7 +57,7 @@ export {
 	normalizeIconObject,
 	isValidIcon,
 	getVisualBlockLabel as __experimentalGetVisualBlockLabel,
-	getAccessibileBlockLabel as __experimentalGetAccessibileBlockLabel,
+	getAccessibleBlockLabel as __experimentalGetAccessibleBlockLabel,
 } from './utils';
 export {
 	doBlocksMatchTemplate,

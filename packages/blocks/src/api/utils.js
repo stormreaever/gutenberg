@@ -161,7 +161,7 @@ export function getVisualBlockLabel( blockType, attributes ) {
  *
  * @return {string} The block label.
  */
-export function getAccessibileBlockLabel( blockType, attributes, separator = ': ' ) {
+export function getAccessibleBlockLabel( blockType, attributes, separator = ': ' ) {
 	const { title: blockTitle } = blockType;
 
 	const blockLabel = getVisualBlockLabel( blockType, attributes );

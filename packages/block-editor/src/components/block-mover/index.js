@@ -11,7 +11,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { IconButton } from '@wordpress/components';
 import {
 	getBlockType,
-	__experimentalGetAccessibileBlockLabel as getAccessibleBlockLabel,
+	__experimentalGetAccessibleBlockLabel as getAccessibleBlockLabel,
 } from '@wordpress/blocks';
 import { Component } from '@wordpress/element';
 import { withSelect, withDispatch } from '@wordpress/data';
