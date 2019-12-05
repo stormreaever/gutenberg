@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { noop, get } from 'lodash';
+import { noop } from 'lodash';
 
 /**
  * WordPress dependencies
@@ -131,9 +131,10 @@ export default compose( [
 			isEditedPostSaveable,
 			isEditedPostPublishable,
 			isPostSavingLocked,
-			getCurrentPost,
+			getCurrentPostId,
 			getCurrentPostType,
 		} = select( 'core/editor' );
+		const { canUser } = select( 'core' );
 		return {
 			isSaving: isSavingPost(),
 			isBeingScheduled: isEditedPostBeingScheduled(),
@@ -142,7 +143,7 @@ export default compose( [
 			isPostSavingLocked: isPostSavingLocked(),
 			isPublishable: isEditedPostPublishable(),
 			isPublished: isCurrentPostPublished(),
-			hasPublishAction: get( getCurrentPost(), [ '_links', 'wp:action-publish' ], false ),
+			hasPublishAction: canUser( 'publish', 'posts', getCurrentPostId() ),
 			postType: getCurrentPostType(),
 		};
 	} ),
