@@ -1,0 +1,7 @@
+{
+	"extends": "../../tsconfig.json",
+	"files": [ "src/index.js" ],
+	"compilerOptions": {
+		"declarationDir": "build-types"
+	}
+}

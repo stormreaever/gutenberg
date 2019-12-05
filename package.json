@@ -160,9 +160,10 @@
 		"worker-farm": "1.7.0"
 	},
 	"scripts": {
+		"__experimental-build-typedefs": "find packages -name \"tsconfig.json\" -depth 2 -exec ./node_modules/.bin/tsc --checkJs false --project {} \\;",
 		"prebuild": "npm run check-engines",
-		"clean:packages": "rimraf ./packages/*/build ./packages/*/build-module ./packages/*/build-style ./packages/*/node_modules",
-		"prebuild:packages": "npm run clean:packages && lerna run build",
+		"clean:packages": "rimraf ./packages/*/build ./packages/*/build-module ./packages/*/build-style ./packages/*/build-types ./packages/*/node_modules",
+		"prebuild:packages": "npm run clean:packages && npm run __experimental-build-typedefs && lerna run build",
 		"build:packages": "node ./bin/packages/build.js",
 		"build": "npm run build:packages && wp-scripts build",
 		"check-engines": "wp-scripts check-engines",
