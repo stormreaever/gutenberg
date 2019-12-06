@@ -54,9 +54,13 @@ async function updateActiveNavigationLink( { url, label } ) {
 		await page.waitForXPath( `//span[@class="block-editor-link-control__search-item-title"]/mark[text()="${ url }"]` );
 		await page.keyboard.press( 'Enter' );
 	}
+
 	if ( label ) {
 		await page.click( '.wp-block-navigation-link__content.is-selected' );
+		const textContent = await page.evaluate( () => document.activeElement.textContent );
+		expect( textContent ).toBe( url );
 		await pressKeyWithModifier( 'primary', 'a' );
+		await page.keyboard.press( 'Backspace' );
 		await page.keyboard.type( label );
 	}
 }
