@@ -12,8 +12,8 @@ var isArray = Array.isArray;
  * Returns true if the two arrays or objects are shallow equal, or false
  * otherwise.
  *
- * @param {(Array|Object)} a First object or array to compare.
- * @param {(Array|Object)} b Second object or array to compare.
+ * @param {any[]|Object} a First object or array to compare.
+ * @param {any[]|Object} b Second object or array to compare.
  *
  * @return {boolean} Whether the two values are shallow equal.
  */
