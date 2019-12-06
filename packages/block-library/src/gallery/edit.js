@@ -416,7 +416,7 @@ class GalleryEdit extends Component {
 	}
 }
 export default compose( [
-	withSelect( ( select, { attributes: { ids } } ) => {
+	withSelect( ( select, { attributes: { ids }, isSelected } ) => {
 		const { getMedia } = select( 'core' );
 		const { getSettings } = select( 'core/block-editor' );
 		const {
@@ -424,9 +424,10 @@ export default compose( [
 			mediaUpload,
 		} = getSettings();
 
-		const resizedImages = reduce(
-			ids,
-			( currentResizedImages, id ) => {
+		let resizedImages = {};
+
+		if ( isSelected ) {
+			resizedImages = reduce( ids, ( currentResizedImages, id ) => {
 				if ( ! id ) {
 					return currentResizedImages;
 				}
@@ -443,8 +444,8 @@ export default compose( [
 					...currentResizedImages,
 					[ parseInt( id, 10 ) ]: sizes,
 				};
-			},
-			{} );
+			}, {} );
+		}
 
 		return {
 			imageSizes,
