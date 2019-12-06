@@ -23,5 +23,17 @@
 		"noImplicitReturns": true /* Report error when not all code paths in function return a value. */,
 		"noFallthroughCasesInSwitch": true /* Report errors for fallthrough cases in switch statement. */
 	},
-	"exclude": [ "./packages/**/test/**", "./packages/**/build/**", "./packages/**/build-module/**" ]
+	"exclude": [
+		"./bin",
+		"./docs",
+		"./lib",
+		"./phpunit",
+		"./packages/**/build-module/**",
+		"./packages/**/build/**",
+		"./packages/**/test/**",
+		"./test",
+		"./vendor",
+		"./wordpress",
+		"**/node_modules"
+	]
 }
