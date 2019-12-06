@@ -11,6 +11,7 @@
 		"emitDeclarationOnly": true,
 		"resolveJsonModule": true,
 		"target": "esnext",
+		"esModuleInterop": true,
 
 		/* Strict Type-Checking Options */
 		"strict": true /* Enable all strict type-checking options. */,
