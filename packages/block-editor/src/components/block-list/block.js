@@ -564,8 +564,6 @@ function BlockListBlock( {
 						position="top right left"
 						forcePosition
 						focusOnMount={ false }
-						anchorVerticalBuffer={ 13 }
-						anchorHorizontalBuffer={ 14 }
 						anchorRef={ wrapper.current }
 						className="block-editor-block-list__block__popover"
 						sticky={ isPartOfMultiSelection ? '.wp-block.is-multi-selected' : true }
@@ -582,8 +580,6 @@ function BlockListBlock( {
 						position="top right left"
 						forcePosition
 						focusOnMount={ false }
-						anchorVerticalBuffer={ 13 }
-						anchorHorizontalBuffer={ 14 }
 						anchorRef={ wrapper.current }
 						className="block-editor-block-list__block__popover"
 						sticky={ isPartOfMultiSelection ? '.wp-block.is-multi-selected' : true }
@@ -592,6 +588,7 @@ function BlockListBlock( {
 							// If the toolbar is being shown because of being forced
 							// it should focus the toolbar right after the mount.
 							focusOnMount={ isForcingContextualToolbar.current }
+							name={ name }
 						/>
 					</Popover>
 				) }

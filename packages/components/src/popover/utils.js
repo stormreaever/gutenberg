@@ -111,7 +111,7 @@ export function computePopoverXAxisPosition( anchorRect, contentSize, xAxis, cor
  *
  * @return {Object} Popover xAxis position and constraints.
  */
-export function computePopoverYAxisPosition( anchorRect, contentSize, yAxis, corner, forcePosition, sticky, anchorVerticalBuffer, anchorRef ) {
+export function computePopoverYAxisPosition( anchorRect, contentSize, yAxis, corner, forcePosition, sticky, anchorRef ) {
 	const { height } = contentSize;
 
 	if ( sticky ) {
@@ -129,7 +129,7 @@ export function computePopoverYAxisPosition( anchorRect, contentSize, yAxis, cor
 		const topRect = topEl.getBoundingClientRect();
 		const bottomRect = bottomEl.getBoundingClientRect();
 
-		if ( topRect.top - height - anchorVerticalBuffer <= scrollRect.top ) {
+		if ( topRect.top - height <= scrollRect.top ) {
 			return {
 				yAxis,
 				popoverTop: Math.min( bottomRect.bottom, scrollRect.top + height ),
@@ -208,10 +208,10 @@ export function computePopoverYAxisPosition( anchorRect, contentSize, yAxis, cor
  *
  * @return {Object} Popover position and constraints.
  */
-export function computePopoverPosition( anchorRect, contentSize, position = 'top', forcePosition, sticky, anchorVerticalBuffer, anchorRef ) {
+export function computePopoverPosition( anchorRect, contentSize, position = 'top', forcePosition, sticky, anchorRef ) {
 	const [ yAxis, xAxis = 'center', corner ] = position.split( ' ' );
 
-	const yAxisPosition = computePopoverYAxisPosition( anchorRect, contentSize, yAxis, corner, forcePosition, sticky, anchorVerticalBuffer, anchorRef );
+	const yAxisPosition = computePopoverYAxisPosition( anchorRect, contentSize, yAxis, corner, forcePosition, sticky, anchorRef );
 	const xAxisPosition = computePopoverXAxisPosition( anchorRect, contentSize, xAxis, corner, forcePosition, yAxisPosition.yAxis );
 
 	return {
