@@ -580,6 +580,8 @@ function BlockListBlock( {
 							<BlockBreadcrumb
 								clientId={ clientId }
 								ref={ breadcrumb }
+								data-type={ name }
+								data-align={ wrapperProps ? wrapperProps[ 'data-align' ] : undefined }
 							/>
 						) }
 					</Popover>
