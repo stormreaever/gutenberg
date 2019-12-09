@@ -54,7 +54,7 @@ export class PostPublishButton extends Component {
 		const { postType, postId } = this.props;
 		const { entitiesSavedStatesCallback } = this.state;
 		this.setState( { entitiesSavedStatesCallback: false }, () => {
-			if ( savedById[ `postType | ${ postType } | ${ postId }` ] ) {
+			if ( savedById.has( [ 'postType', postType, String( postId ) ] ) ) {
 				entitiesSavedStatesCallback();
 			}
 		} );
@@ -162,9 +162,13 @@ export class PostPublishButton extends Component {
 					isLarge
 					ref={ this.buttonNode }
 					{ ...componentProps }
-					className={ classnames( componentProps.className, {
-						'editor-post-publish-button__has-changes-dot': hasNonPostEntityChanges,
-					} ) }
+					className={ classnames(
+						componentProps.className,
+						'editor-post-publish-button__button',
+						{
+							'has-changes-dot': hasNonPostEntityChanges,
+						}
+					) }
 				>
 					{ componentChildren }
 				</Button>
