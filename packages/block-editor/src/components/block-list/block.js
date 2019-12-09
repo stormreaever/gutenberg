@@ -22,7 +22,7 @@ import {
 	isUnmodifiedDefaultBlock,
 	getUnregisteredTypeHandlerName,
 } from '@wordpress/blocks';
-import { KeyboardShortcuts, withFilters } from '@wordpress/components';
+import { KeyboardShortcuts, withFilters, Popover } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import {
 	withDispatch,
@@ -551,25 +551,62 @@ function BlockListBlock( {
 					{ 'has-mover-inside': moverDirection === 'horizontal' },
 				) }
 			>
-				{ isFirstMultiSelected && (
-					<BlockMultiControls
-						rootClientId={ rootClientId }
-						moverDirection={ moverDirection }
-					/>
+				{ ( isFirstMultiSelected || shouldRenderMovers ) && (
+					<Popover
+						noArrow
+						position="middle left top"
+						forcePosition
+						anchorHorizontalBuffer={ 24 }
+						focusOnMount={ false }
+						anchorRef={ wrapper.current }
+						className="block-editor-block-list__block__popover"
+						sticky={ isPartOfMultiSelection ? '.wp-block.is-multi-selected' : true }
+					>
+						{ isFirstMultiSelected && (
+							<BlockMultiControls
+								rootClientId={ rootClientId }
+								moverDirection={ moverDirection }
+							/>
+						) }
+						{ shouldRenderMovers && blockMover }
+					</Popover>
 				) }
-				{ shouldRenderMovers && ( moverDirection === 'vertical' ) && blockMover }
 				{ shouldShowBreadcrumb && (
-					<BlockBreadcrumb
-						clientId={ clientId }
-						ref={ breadcrumb }
-					/>
+					<Popover
+						noArrow
+						position="top right left"
+						forcePosition
+						focusOnMount={ false }
+						anchorVerticalBuffer={ 13 }
+						anchorHorizontalBuffer={ 14 }
+						anchorRef={ wrapper.current }
+						className="block-editor-block-list__block__popover"
+						sticky={ isPartOfMultiSelection ? '.wp-block.is-multi-selected' : true }
+					>
+						<BlockBreadcrumb
+							clientId={ clientId }
+							ref={ breadcrumb }
+						/>
+					</Popover>
 				) }
 				{ ( shouldShowContextualToolbar || isForcingContextualToolbar.current ) && (
-					<BlockContextualToolbar
-						// If the toolbar is being shown because of being forced
-						// it should focus the toolbar right after the mount.
-						focusOnMount={ isForcingContextualToolbar.current }
-					/>
+					<Popover
+						noArrow
+						position="top right left"
+						forcePosition
+						focusOnMount={ false }
+						anchorVerticalBuffer={ 13 }
+						anchorHorizontalBuffer={ 14 }
+						anchorRef={ wrapper.current }
+						className="block-editor-block-list__block__popover"
+						sticky={ isPartOfMultiSelection ? '.wp-block.is-multi-selected' : true }
+					>
+						<BlockContextualToolbar
+							// If the toolbar is being shown because of being forced
+							// it should focus the toolbar right after the mount.
+							focusOnMount={ isForcingContextualToolbar.current }
+						/>
+					</Popover>
 				) }
 				{
 					! isNavigationMode &&
@@ -598,7 +635,6 @@ function BlockListBlock( {
 						{ isValid && mode === 'html' && (
 							<BlockHtml clientId={ clientId } />
 						) }
-						{ shouldRenderMovers && ( moverDirection === 'horizontal' ) && blockMover }
 						{ ! isValid && [
 							<BlockInvalidWarning
 								key="invalid-warning"
