@@ -131,7 +131,7 @@ export function computePopoverYAxisPosition( anchorRect, contentSize, yAxis, cor
 			}
 		}
 
-		const scrollContainerEl = getScrollContainer( topEl );
+		const scrollContainerEl = getScrollContainer( topEl ) || document.body;
 		const scrollRect = scrollContainerEl.getBoundingClientRect();
 		const topRect = topEl.getBoundingClientRect();
 		const bottomRect = bottomEl.getBoundingClientRect();
