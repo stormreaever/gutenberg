@@ -354,6 +354,7 @@ const Popover = ( {
 		anchorHorizontalBuffer,
 		position,
 		forcePosition,
+		sticky,
 	] );
 
 	useFocusContentOnMount( focusOnMount, contentRef );
@@ -471,10 +472,6 @@ const Popover = ( {
 				// default to an in-place rendering.
 				if ( getSlot && getSlot( SLOT_NAME ) ) {
 					content = <Fill name={ SLOT_NAME }>{ content }</Fill>;
-				}
-
-				if ( anchorRef ) {
-					return content;
 				}
 
 				return (
