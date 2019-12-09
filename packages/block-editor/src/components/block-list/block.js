@@ -551,26 +551,13 @@ function BlockListBlock( {
 					{ 'has-mover-inside': moverDirection === 'horizontal' },
 				) }
 			>
-				{ ( isFirstMultiSelected || shouldRenderMovers ) && (
-					<Popover
-						noArrow
-						position="middle left top"
-						forcePosition
-						anchorHorizontalBuffer={ 24 }
-						focusOnMount={ false }
-						anchorRef={ wrapper.current }
-						className="block-editor-block-list__block__popover"
-						sticky={ isPartOfMultiSelection ? '.wp-block.is-multi-selected' : true }
-					>
-						{ isFirstMultiSelected && (
-							<BlockMultiControls
-								rootClientId={ rootClientId }
-								moverDirection={ moverDirection }
-							/>
-						) }
-						{ shouldRenderMovers && blockMover }
-					</Popover>
+				{ isFirstMultiSelected && (
+					<BlockMultiControls
+						rootClientId={ rootClientId }
+						moverDirection={ moverDirection }
+					/>
 				) }
+				{ shouldRenderMovers && ( moverDirection === 'vertical' ) && blockMover }
 				{ shouldShowBreadcrumb && (
 					<Popover
 						noArrow
@@ -635,6 +622,7 @@ function BlockListBlock( {
 						{ isValid && mode === 'html' && (
 							<BlockHtml clientId={ clientId } />
 						) }
+						{ shouldRenderMovers && ( moverDirection === 'horizontal' ) && blockMover }
 						{ ! isValid && [
 							<BlockInvalidWarning
 								key="invalid-warning"
