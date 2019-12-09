@@ -16,13 +16,14 @@ const isRTL = () => document.documentElement.dir === 'rtl';
  * @param {Object}  contentSize      Content Size.
  * @param {string}  xAxis            Desired xAxis.
  * @param {string}  corner           Desired corner.
- * @param {boolean} forcePosition    Wether not to adjust the position based on
- *                                   available space.
+ * @param {boolean} sticky           Whether or not to stick the popover to the
+ *                                   scroll container edge when part of the
+ *                                   anchor leaves view.
  * @param {string}  chosenYAxis      yAxis to be used.
  *
  * @return {Object} Popover xAxis position and constraints.
  */
-export function computePopoverXAxisPosition( anchorRect, contentSize, xAxis, corner, forcePosition, chosenYAxis ) {
+export function computePopoverXAxisPosition( anchorRect, contentSize, xAxis, corner, sticky, chosenYAxis ) {
 	const { width } = contentSize;
 	// Correct xAxis for RTL support
 	if ( xAxis === 'left' && isRTL() ) {
@@ -69,7 +70,8 @@ export function computePopoverXAxisPosition( anchorRect, contentSize, xAxis, cor
 	// Choosing the x axis
 	let chosenXAxis = xAxis;
 	let contentWidth = null;
-	if ( ! forcePosition ) {
+
+	if ( ! sticky ) {
 		if ( xAxis === 'center' && centerAlignment.contentWidth === width ) {
 			chosenXAxis = 'center';
 		} else if ( xAxis === 'left' && leftAlignment.contentWidth === width ) {
@@ -106,12 +108,14 @@ export function computePopoverXAxisPosition( anchorRect, contentSize, xAxis, cor
  * @param {Object}  contentSize      Content Size.
  * @param {string}  yAxis            Desired yAxis.
  * @param {string}  corner           Desired corner.
- * @param {boolean} forcePosition    Wether not to adjust the position based on
- *                                   available space.
+ * @param {boolean} sticky           Whether or not to stick the popover to the
+ *                                   scroll container edge when part of the
+ *                                   anchor leaves view.
+ * @param {Element} anchorRef        The anchor element.
  *
  * @return {Object} Popover xAxis position and constraints.
  */
-export function computePopoverYAxisPosition( anchorRect, contentSize, yAxis, corner, forcePosition, sticky, anchorRef ) {
+export function computePopoverYAxisPosition( anchorRect, contentSize, yAxis, corner, sticky, anchorRef ) {
 	const { height } = contentSize;
 
 	if ( sticky ) {
@@ -120,8 +124,11 @@ export function computePopoverYAxisPosition( anchorRect, contentSize, yAxis, cor
 
 		if ( typeof sticky === 'string' ) {
 			const elements = document.querySelectorAll( sticky );
-			topEl = elements[ 0 ];
-			bottomEl = elements[ elements.length - 1 ];
+
+			if ( elements.length ) {
+				topEl = elements[ 0 ];
+				bottomEl = elements[ elements.length - 1 ];
+			}
 		}
 
 		const scrollContainerEl = getScrollContainer( topEl );
@@ -166,7 +173,8 @@ export function computePopoverYAxisPosition( anchorRect, contentSize, yAxis, cor
 	// Choosing the y axis
 	let chosenYAxis = yAxis;
 	let contentHeight = null;
-	if ( ! forcePosition ) {
+
+	if ( ! sticky ) {
 		if ( yAxis === 'middle' && middleAlignment.contentHeight === height ) {
 			chosenYAxis = 'middle';
 		} else if ( yAxis === 'top' && topAlignment.contentHeight === height ) {
@@ -203,16 +211,18 @@ export function computePopoverYAxisPosition( anchorRect, contentSize, yAxis, cor
  * @param {Object}  anchorRect       Anchor Rect.
  * @param {Object}  contentSize      Content Size.
  * @param {string}  position         Position.
- * @param {boolean} forcePosition    Wether not to adjust the position based on
- *                                   available space.
+ * @param {boolean} sticky           Whether or not to stick the popover to the
+ *                                   scroll container edge when part of the
+ *                                   anchor leaves view.
+ * @param {Element} anchorRef        The anchor element.
  *
  * @return {Object} Popover position and constraints.
  */
-export function computePopoverPosition( anchorRect, contentSize, position = 'top', forcePosition, sticky, anchorRef ) {
+export function computePopoverPosition( anchorRect, contentSize, position = 'top', sticky, anchorRef ) {
 	const [ yAxis, xAxis = 'center', corner ] = position.split( ' ' );
 
-	const yAxisPosition = computePopoverYAxisPosition( anchorRect, contentSize, yAxis, corner, forcePosition, sticky, anchorRef );
-	const xAxisPosition = computePopoverXAxisPosition( anchorRect, contentSize, xAxis, corner, forcePosition, yAxisPosition.yAxis );
+	const yAxisPosition = computePopoverYAxisPosition( anchorRect, contentSize, yAxis, corner, sticky, anchorRef );
+	const xAxisPosition = computePopoverXAxisPosition( anchorRect, contentSize, xAxis, corner, sticky, yAxisPosition.yAxis );
 
 	return {
 		...xAxisPosition,

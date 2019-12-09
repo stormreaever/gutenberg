@@ -558,38 +558,29 @@ function BlockListBlock( {
 					/>
 				) }
 				{ shouldRenderMovers && ( moverDirection === 'vertical' ) && blockMover }
-				{ shouldShowBreadcrumb && (
+				{ ( shouldShowBreadcrumb || shouldShowContextualToolbar || isForcingContextualToolbar.current ) && (
 					<Popover
 						noArrow
 						position="top right left"
-						forcePosition
 						focusOnMount={ false }
 						anchorRef={ wrapper.current }
 						className="block-editor-block-list__block__popover"
-						sticky={ isPartOfMultiSelection ? '.wp-block.is-multi-selected' : true }
+						__unstableSticky={ isPartOfMultiSelection ? '.wp-block.is-multi-selected' : true }
 					>
-						<BlockBreadcrumb
-							clientId={ clientId }
-							ref={ breadcrumb }
-						/>
-					</Popover>
-				) }
-				{ ( shouldShowContextualToolbar || isForcingContextualToolbar.current ) && (
-					<Popover
-						noArrow
-						position="top right left"
-						forcePosition
-						focusOnMount={ false }
-						anchorRef={ wrapper.current }
-						className="block-editor-block-list__block__popover"
-						sticky={ isPartOfMultiSelection ? '.wp-block.is-multi-selected' : true }
-					>
-						<BlockContextualToolbar
-							// If the toolbar is being shown because of being forced
-							// it should focus the toolbar right after the mount.
-							focusOnMount={ isForcingContextualToolbar.current }
-							name={ name }
-						/>
+						{ ( shouldShowContextualToolbar || isForcingContextualToolbar.current ) && (
+							<BlockContextualToolbar
+								// If the toolbar is being shown because of being forced
+								// it should focus the toolbar right after the mount.
+								focusOnMount={ isForcingContextualToolbar.current }
+								name={ name }
+							/>
+						) }
+						{ shouldShowBreadcrumb && (
+							<BlockBreadcrumb
+								clientId={ clientId }
+								ref={ breadcrumb }
+							/>
+						) }
 					</Popover>
 				) }
 				{

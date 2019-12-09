@@ -227,7 +227,6 @@ const Popover = ( {
 	// of props which aren't explicitly handled by this component.
 	/* eslint-disable no-unused-vars */
 	position = 'top',
-	forcePosition,
 	range,
 	focusOnMount = 'firstElement',
 	anchorRef,
@@ -240,7 +239,7 @@ const Popover = ( {
 	animate = true,
 	onClickOutside,
 	onFocusOutside,
-	sticky,
+	__unstableSticky,
 	/* eslint-enable no-unused-vars */
 	...contentProps
 } ) => {
@@ -299,7 +298,7 @@ const Popover = ( {
 				yAxis,
 				contentHeight,
 				contentWidth,
-			} = computePopoverPosition( anchor, contentRect.current, position, forcePosition, sticky, anchorRef );
+			} = computePopoverPosition( anchor, contentRect.current, position, __unstableSticky, anchorRef );
 
 			setClass( containerEl, 'is-without-arrow', noArrow || ( xAxis === 'center' && yAxis === 'middle' ) );
 			setAttribute( containerEl, 'data-x-axis', xAxis );
@@ -353,8 +352,7 @@ const Popover = ( {
 		anchorVerticalBuffer,
 		anchorHorizontalBuffer,
 		position,
-		forcePosition,
-		sticky,
+		__unstableSticky,
 	] );
 
 	useFocusContentOnMount( focusOnMount, contentRef );
