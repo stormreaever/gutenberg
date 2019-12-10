@@ -32,15 +32,54 @@ function render_block_core_latest_posts( $attributes ) {
 	$excerpt_length = $attributes['excerptLength'];
 
 	foreach ( $recent_posts as $post ) {
+
+		$list_items_markup .= '<li class="latest-post-item">';
+
+		if ( isset( $attributes['displayPostThumbnail'] ) && $attributes['displayPostThumbnail'] && has_post_thumbnail($post) ) {
+			$list_items_markup .= '<div class="post-image">' . get_the_post_thumbnail($post, 'thumbnail') . '</div>';
+		}
+
+		$list_items_markup .= '<div class="post-content">';
+
 		$title = get_the_title( $post );
 		if ( ! $title ) {
 			$title = __( '(no title)' );
 		}
 		$list_items_markup .= sprintf(
-			'<li><a href="%1$s">%2$s</a>',
+			'<h3 class="post-list-title"><a href="%1$s">%2$s</a></h3>',
 			esc_url( get_permalink( $post ) ),
 			$title
 		);
+
+		if (
+			( isset( $attributes['displayPostCategories'] ) && $attributes['displayPostCategories'] ) ||
+			( isset( $attributes['displayPostDate'] ) && $attributes['displayPostDate'] )
+		) {
+			$showing_post_meta = true;
+		} else {
+			$showing_post_meta = false;
+		}
+
+		if ($showing_post_meta) {
+			$list_items_markup .= '<div class="post-meta">';
+		}
+
+		if ( isset( $attributes['displayPostCategories'] ) && $attributes['displayPostCategories'] ) {
+			$categories = get_the_category($post);
+			$category_links = [];
+			foreach($categories as $category) {
+				$category_link = sprintf(
+					'<a href="%1$s" alt="%2$s">%3$s</a>',
+					esc_url( get_category_link( $category->term_id ) ),
+					esc_attr( sprintf( __( 'View all posts in %s', 'textdomain' ), $category->name ) ),
+					esc_html( $category->name )
+				);
+				$category_links[] = $category_link;
+			}
+			$list_items_markup .= sprintf('<span class="cat-links">%1$s</span>',
+				implode(', ', $category_links)
+			);
+		}
 
 		if ( isset( $attributes['displayPostDate'] ) && $attributes['displayPostDate'] ) {
 			$list_items_markup .= sprintf(
@@ -48,6 +87,10 @@ function render_block_core_latest_posts( $attributes ) {
 				esc_attr( get_the_date( 'c', $post ) ),
 				esc_html( get_the_date( '', $post ) )
 			);
+		}
+
+		if ($showing_post_meta) {
+			$list_items_markup .= '</div><!-- /.post-meta -->';
 		}
 
 		if ( isset( $attributes['displayPostContent'] ) && $attributes['displayPostContent']
@@ -84,6 +127,8 @@ function render_block_core_latest_posts( $attributes ) {
 			);
 		}
 
+		$list_items_markup .= '</div><!-- /.post-content -->';
+
 		$list_items_markup .= "</li>\n";
 	}
 
@@ -100,8 +145,16 @@ function render_block_core_latest_posts( $attributes ) {
 		$class .= ' columns-' . $attributes['columns'];
 	}
 
+	if ( isset( $attributes['displayPostCategories'] ) && $attributes['displayPostCategories'] ) {
+		$class .= ' has-categories';
+	}
+
 	if ( isset( $attributes['displayPostDate'] ) && $attributes['displayPostDate'] ) {
 		$class .= ' has-dates';
+	}
+
+	if ( isset( $attributes['displayPostThumbnail'] ) && $attributes['displayPostThumbnail'] ) {
+		$class .= ' has-thumbnail';
 	}
 
 	if ( isset( $attributes['className'] ) ) {
@@ -149,7 +202,15 @@ function register_block_core_latest_posts() {
 					'type'    => 'number',
 					'default' => 55,
 				),
+				'displayPostCategories'   => array(
+					'type'    => 'boolean',
+					'default' => false,
+				),
 				'displayPostDate'         => array(
+					'type'    => 'boolean',
+					'default' => false,
+				),
+				'displayPostThumbnail'    => array(
 					'type'    => 'boolean',
 					'default' => false,
 				),

@@ -70,7 +70,7 @@ class LatestPostsEdit extends Component {
 	render() {
 		const { attributes, setAttributes, latestPosts } = this.props;
 		const { categoriesList } = this.state;
-		const { displayPostContentRadio, displayPostContent, displayPostDate, postLayout, columns, order, orderBy, categories, postsToShow, excerptLength } = attributes;
+		const { displayPostContentRadio, displayPostContent, displayPostCategories, displayPostDate, displayPostThumbnail, postLayout, columns, order, orderBy, categories, postsToShow, excerptLength } = attributes;
 
 		const inspectorControls = (
 			<InspectorControls>
@@ -104,9 +104,19 @@ class LatestPostsEdit extends Component {
 
 				<PanelBody title={ __( 'Post Meta Settings' ) }>
 					<ToggleControl
+						label={ __( 'Display post categories' ) }
+						checked={ displayPostCategories }
+						onChange={ ( value ) => setAttributes( { displayPostCategories: value } ) }
+					/>
+					<ToggleControl
 						label={ __( 'Display post date' ) }
 						checked={ displayPostDate }
 						onChange={ ( value ) => setAttributes( { displayPostDate: value } ) }
+					/>
+					<ToggleControl
+						label={ __( 'Display post thumbnail' ) }
+						checked={ displayPostThumbnail }
+						onChange={ ( value ) => setAttributes( { displayPostThumbnail: value } ) }
 					/>
 				</PanelBody>
 
@@ -185,7 +195,9 @@ class LatestPostsEdit extends Component {
 					className={ classnames( this.props.className, {
 						'wp-block-latest-posts__list': true,
 						'is-grid': postLayout === 'grid',
+						'has-categories': displayPostCategories,
 						'has-dates': displayPostDate,
+						'has-thumbnail': displayPostThumbnail,
 						[ `columns-${ columns }` ]: postLayout === 'grid',
 					} ) }
 				>
@@ -209,11 +221,18 @@ class LatestPostsEdit extends Component {
 										__( '(no title)' )
 									}
 								</a>
-								{ displayPostDate && post.date_gmt &&
-									<time dateTime={ format( 'c', post.date_gmt ) } className="wp-block-latest-posts__post-date">
-										{ dateI18n( dateFormat, post.date_gmt ) }
-									</time>
-								}
+								<div class="post-meta">
+									{ displayPostCategories &&
+										<span className="wp-block-latest-posts__cat-links">
+											<a href="#">Category</a>
+										</span>
+									}
+									{ displayPostDate && post.date_gmt &&
+										<time dateTime={ format( 'c', post.date_gmt ) } className="wp-block-latest-posts__post-date">
+											{ dateI18n( dateFormat, post.date_gmt ) }
+										</time>
+									}
+								</div>
 								{ displayPostContent && displayPostContentRadio === 'excerpt' &&
 								<div className="wp-block-latest-posts__post-excerpt">
 									<RawHTML
