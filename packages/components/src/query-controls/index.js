@@ -26,18 +26,18 @@ export default function QueryControls( {
 	onOrderByChange,
 } ) {
 	return [
-		( onOrderChange && onOrderByChange ) && (
+		onOrderChange && onOrderByChange && (
 			<SelectControl
 				key="query-controls-order-select"
 				label={ __( 'Order by' ) }
 				value={ `${ orderBy }/${ order }` }
 				options={ [
 					{
-						label: __( 'Newest to Oldest' ),
+						label: __( 'Newest to oldest' ),
 						value: 'date/desc',
 					},
 					{
-						label: __( 'Oldest to Newest' ),
+						label: __( 'Oldest to newest' ),
 						value: 'date/asc',
 					},
 					{
@@ -70,7 +70,8 @@ export default function QueryControls( {
 				noOptionLabel={ __( 'All' ) }
 				selectedCategoryId={ selectedCategoryId }
 				onChange={ onCategoryChange }
-			/> ),
+			/>
+		),
 		onNumberOfItemsChange && (
 			<RangeControl
 				key="query-controls-range-control"

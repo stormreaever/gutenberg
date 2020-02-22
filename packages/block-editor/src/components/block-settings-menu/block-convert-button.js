@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { MenuItem } from '@wordpress/components';
+import { grid } from '@wordpress/icons';
 
 export default function BlockConvertButton( { shouldRender, onClick, small } ) {
 	if ( ! shouldRender ) {
@@ -11,11 +12,7 @@ export default function BlockConvertButton( { shouldRender, onClick, small } ) {
 
 	const label = __( 'Convert to Blocks' );
 	return (
-		<MenuItem
-			className="block-editor-block-settings-menu__control"
-			onClick={ onClick }
-			icon="screenoptions"
-		>
+		<MenuItem onClick={ onClick } icon={ grid }>
 			{ ! small && label }
 		</MenuItem>
 	);

@@ -1,10 +1,7 @@
 /**
  * WordPress dependencies
  */
-import {
-	createBlock,
-	getBlockAttributes,
-} from '@wordpress/blocks';
+import { createBlock, getBlockAttributes } from '@wordpress/blocks';
 
 /**
  * Internal dependencies
@@ -42,7 +39,7 @@ const transforms = {
 			},
 			transform( node ) {
 				const attributes = getBlockAttributes( name, node.outerHTML );
-				const { textAlign } = node.style;
+				const { textAlign } = node.style || {};
 
 				attributes.level = getLevelFromHeadingNodeName( node.nodeName );
 

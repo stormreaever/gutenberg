@@ -9,11 +9,12 @@ import { flatMap, isEmpty, isFunction } from 'lodash';
  */
 import { DOWN } from '@wordpress/keycodes';
 import deprecated from '@wordpress/deprecated';
+import { Fragment } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import IconButton from '../icon-button';
+import Button from '../button';
 import Dropdown from '../dropdown';
 import { NavigableMenu } from '../navigable-container';
 
@@ -24,7 +25,10 @@ function mergeProps( defaultProps = {}, props = {} ) {
 	};
 
 	if ( props.className && defaultProps.className ) {
-		mergedProps.className = classnames( props.className, defaultProps.className );
+		mergedProps.className = classnames(
+			props.className,
+			defaultProps.className
+		);
 	}
 
 	return mergedProps;
@@ -70,10 +74,13 @@ function DropdownMenu( {
 			controlSets = [ controlSets ];
 		}
 	}
-	const mergedPopoverProps = mergeProps( {
-		className: 'components-dropdown-menu__popover',
-		position,
-	}, popoverProps );
+	const mergedPopoverProps = mergeProps(
+		{
+			className: 'components-dropdown-menu__popover',
+			position,
+		},
+		popoverProps
+	);
 
 	return (
 		<Dropdown
@@ -87,15 +94,37 @@ function DropdownMenu( {
 						onToggle();
 					}
 				};
-				const mergedToggleProps = mergeProps( {
-					className: classnames( 'components-dropdown-menu__toggle', {
-						'is-opened': isOpen,
-					} ),
-					tooltip: label,
-				}, toggleProps );
+				const mergedToggleProps = mergeProps(
+					{
+						className: classnames(
+							'components-dropdown-menu__toggle',
+							{
+								'is-opened': isOpen,
+							}
+						),
+					},
+					toggleProps
+				);
 
+				let buttonChildren;
+				if (
+					mergedToggleProps.children ||
+					! icon ||
+					hasArrowIndicator
+				) {
+					buttonChildren = [
+						<Fragment key="0">
+							{ mergedToggleProps.children }
+						</Fragment>,
+						<Fragment key="1">
+							{ ( ! icon || hasArrowIndicator ) && (
+								<span className="components-dropdown-menu__indicator" />
+							) }
+						</Fragment>,
+					];
+				}
 				return (
-					<IconButton
+					<Button
 						{ ...mergedToggleProps }
 						icon={ icon }
 						onClick={ ( event ) => {
@@ -113,31 +142,31 @@ function DropdownMenu( {
 						aria-haspopup="true"
 						aria-expanded={ isOpen }
 						label={ label }
+						showTooltip
 					>
-						{ ( ! icon || hasArrowIndicator ) && <span className="components-dropdown-menu__indicator" /> }
-					</IconButton>
+						{ buttonChildren }
+					</Button>
 				);
 			} }
 			renderContent={ ( props ) => {
-				const mergedMenuProps = mergeProps( {
-					'aria-label': menuLabel || label,
-					className: 'components-dropdown-menu__menu',
-				}, menuProps );
+				const mergedMenuProps = mergeProps(
+					{
+						'aria-label': menuLabel || label,
+						className: 'components-dropdown-menu__menu',
+					},
+					menuProps
+				);
 
 				return (
-					<NavigableMenu
-						{ ...mergedMenuProps }
-						role="menu"
-					>
-						{
-							isFunction( children ) ?
-								children( props ) :
-								null
-						}
-						{ flatMap( controlSets, ( controlSet, indexOfSet ) => (
+					<NavigableMenu { ...mergedMenuProps } role="menu">
+						{ isFunction( children ) ? children( props ) : null }
+						{ flatMap( controlSets, ( controlSet, indexOfSet ) =>
 							controlSet.map( ( control, indexOfControl ) => (
-								<IconButton
-									key={ [ indexOfSet, indexOfControl ].join() }
+								<Button
+									key={ [
+										indexOfSet,
+										indexOfControl,
+									].join() }
 									onClick={ ( event ) => {
 										event.stopPropagation();
 										props.onClose();
@@ -148,18 +177,31 @@ function DropdownMenu( {
 									className={ classnames(
 										'components-dropdown-menu__menu-item',
 										{
-											'has-separator': indexOfSet > 0 && indexOfControl === 0,
+											'has-separator':
+												indexOfSet > 0 &&
+												indexOfControl === 0,
 											'is-active': control.isActive,
-										},
+										}
 									) }
 									icon={ control.icon }
-									role="menuitem"
+									aria-checked={
+										control.role === 'menuitemcheckbox' ||
+										control.role === 'menuitemradio'
+											? control.isActive
+											: undefined
+									}
+									role={
+										control.role === 'menuitemcheckbox' ||
+										control.role === 'menuitemradio'
+											? control.role
+											: 'menuitem'
+									}
 									disabled={ control.isDisabled }
 								>
 									{ control.title }
-								</IconButton>
+								</Button>
 							) )
-						) ) }
+						) }
 					</NavigableMenu>
 				);
 			} }

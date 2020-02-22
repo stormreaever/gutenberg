@@ -7,11 +7,12 @@ import classnames from 'classnames';
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import {
-	ExternalLink,
-	IconButton,
-} from '@wordpress/components';
+import { pencil } from '@wordpress/icons';
+import { createSlotFill, ExternalLink, Button } from '@wordpress/components';
 import { safeDecodeURI, filterURLForDisplay } from '@wordpress/url';
+import { useMemo } from '@wordpress/element';
+
+const { Slot, Fill } = createSlotFill( 'BlockEditorURLPopoverLinkViewer' );
 
 function LinkViewerUrl( { url, urlLabel, className } ) {
 	const linkClassName = classnames(
@@ -24,16 +25,13 @@ function LinkViewerUrl( { url, urlLabel, className } ) {
 	}
 
 	return (
-		<ExternalLink
-			className={ linkClassName }
-			href={ url }
-		>
+		<ExternalLink className={ linkClassName } href={ url }>
 			{ urlLabel || filterURLForDisplay( safeDecodeURI( url ) ) }
 		</ExternalLink>
 	);
 }
 
-export default function LinkViewer( {
+function LinkViewer( {
 	className,
 	linkClassName,
 	onEditLinkClick,
@@ -49,8 +47,23 @@ export default function LinkViewer( {
 			) }
 			{ ...props }
 		>
-			<LinkViewerUrl url={ url } urlLabel={ urlLabel } className={ linkClassName } />
-			{ onEditLinkClick && <IconButton icon="edit" label={ __( 'Edit' ) } onClick={ onEditLinkClick } /> }
+			<LinkViewerUrl
+				url={ url }
+				urlLabel={ urlLabel }
+				className={ linkClassName }
+			/>
+			{ onEditLinkClick && (
+				<Button
+					icon={ pencil }
+					label={ __( 'Edit' ) }
+					onClick={ onEditLinkClick }
+				/>
+			) }
+			<Slot fillProps={ useMemo( () => ( { url } ), [ url ] ) } />
 		</div>
 	);
 }
+
+LinkViewer.Fill = Fill;
+
+export default LinkViewer;
