@@ -6,6 +6,7 @@ import { filter, includes, isArray } from 'lodash';
 /**
  * WordPress dependencies
  */
+import { store as blocksStore } from '@wordpress/blocks';
 import { withSelect } from '@wordpress/data';
 import { compose, withState } from '@wordpress/compose';
 import { TextControl } from '@wordpress/components';
@@ -52,9 +53,10 @@ function BlockManager( {
 			{ !! numberOfHiddenBlocks && (
 				<div className="edit-post-manage-blocks-modal__disabled-blocks-count">
 					{ sprintf(
+						/* translators: %d: number of blocks. */
 						_n(
-							'%1$d block is disabled.',
-							'%1$d blocks are disabled.',
+							'%d block is disabled.',
+							'%d blocks are disabled.',
 							numberOfHiddenBlocks
 						),
 						numberOfHiddenBlocks
@@ -75,12 +77,19 @@ function BlockManager( {
 				{ categories.map( ( category ) => (
 					<BlockManagerCategory
 						key={ category.slug }
-						category={ category }
+						title={ category.title }
 						blockTypes={ filter( blockTypes, {
 							category: category.slug,
 						} ) }
 					/>
 				) ) }
+				<BlockManagerCategory
+					title={ __( 'Uncategorized' ) }
+					blockTypes={ filter(
+						blockTypes,
+						( { category } ) => ! category
+					) }
+				/>
 			</div>
 		</div>
 	);
@@ -94,7 +103,7 @@ export default compose( [
 			getCategories,
 			hasBlockSupport,
 			isMatchingSearchTerm,
-		} = select( 'core/blocks' );
+		} = select( blocksStore );
 		const { getPreference } = select( 'core/edit-post' );
 		const hiddenBlockTypes = getPreference( 'hiddenBlockTypes' );
 		const numberOfHiddenBlocks =

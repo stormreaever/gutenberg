@@ -11,6 +11,8 @@ import { __ } from '@wordpress/i18n';
 
 const { wp } = window;
 
+const DEFAULT_EMPTY_GALLERY = [];
+
 /**
  * Prepares the Featured Image toolbars and frames.
  *
@@ -280,8 +282,9 @@ class MediaUpload extends Component {
 			addToGallery = false,
 			allowedTypes,
 			multiple = false,
-			value = null,
+			value = DEFAULT_EMPTY_GALLERY,
 		} = this.props;
+
 		// If the value did not changed there is no need to rebuild the frame,
 		// we can continue to use the existing one.
 		if ( value === this.lastGalleryValue ) {
@@ -298,7 +301,7 @@ class MediaUpload extends Component {
 		if ( addToGallery ) {
 			currentState = 'gallery-library';
 		} else {
-			currentState = value ? 'gallery-edit' : 'gallery';
+			currentState = value && value.length ? 'gallery-edit' : 'gallery';
 		}
 		if ( ! this.GalleryDetailsMediaFrame ) {
 			this.GalleryDetailsMediaFrame = getGalleryDetailsMediaFrame();
@@ -313,7 +316,7 @@ class MediaUpload extends Component {
 			state: currentState,
 			multiple,
 			selection,
-			editing: value ? true : false,
+			editing: value && value.length ? true : false,
 		} );
 		wp.media.frame = this.frame;
 		this.initializeListeners();
@@ -367,10 +370,7 @@ class MediaUpload extends Component {
 	onSelect() {
 		const { onSelect, multiple = false } = this.props;
 		// Get media attachment details from the frame state
-		const attachment = this.frame
-			.state()
-			.get( 'selection' )
-			.toJSON();
+		const attachment = this.frame.state().get( 'selection' ).toJSON();
 		onSelect( multiple ? attachment : attachment[ 0 ] );
 	}
 
@@ -417,11 +417,7 @@ class MediaUpload extends Component {
 	}
 
 	openModal() {
-		if (
-			this.props.gallery &&
-			this.props.value &&
-			this.props.value.length > 0
-		) {
+		if ( this.props.gallery ) {
 			this.buildAndSetGalleryFrame();
 		}
 		this.frame.open();

@@ -25,7 +25,6 @@ import {
 import styles from './style.scss';
 
 function HeaderToolbar( {
-	hasFixedToolbar,
 	hasRedo,
 	hasUndo,
 	redo,
@@ -34,10 +33,39 @@ function HeaderToolbar( {
 	showKeyboardHideButton,
 	getStylesFromColorScheme,
 	onHideKeyboard,
+	isRTL,
 } ) {
 	const scrollViewRef = useRef( null );
 	const scrollToStart = () => {
 		scrollViewRef.current.scrollTo( { x: 0 } );
+	};
+
+	const renderHistoryButtons = () => {
+		const buttons = [
+			/* TODO: replace with EditorHistoryRedo and EditorHistoryUndo */
+			<ToolbarButton
+				key="undoButton"
+				title={ __( 'Undo' ) }
+				icon={ undoIcon }
+				isDisabled={ ! hasUndo }
+				onClick={ undo }
+				extraProps={ {
+					hint: __( 'Double tap to undo last change' ),
+				} }
+			/>,
+			<ToolbarButton
+				key="redoButton"
+				title={ __( 'Redo' ) }
+				icon={ redoIcon }
+				isDisabled={ ! hasRedo }
+				onClick={ redo }
+				extraProps={ {
+					hint: __( 'Double tap to redo last change' ),
+				} }
+			/>,
+		];
+
+		return isRTL ? buttons.reverse() : buttons;
 	};
 
 	return (
@@ -56,29 +84,9 @@ function HeaderToolbar( {
 				alwaysBounceHorizontal={ false }
 				contentContainerStyle={ styles.scrollableContent }
 			>
-				<Toolbar accessible={ false }>
-					<Inserter disabled={ ! showInserter } />
-					{ /* TODO: replace with EditorHistoryRedo and EditorHistoryUndo */ }
-					<ToolbarButton
-						title={ __( 'Undo' ) }
-						icon={ undoIcon }
-						isDisabled={ ! hasUndo }
-						onClick={ undo }
-						extraProps={ {
-							hint: __( 'Double tap to undo last change' ),
-						} }
-					/>
-					<ToolbarButton
-						title={ __( 'Redo' ) }
-						icon={ redoIcon }
-						isDisabled={ ! hasRedo }
-						onClick={ redo }
-						extraProps={ {
-							hint: __( 'Double tap to redo last change' ),
-						} }
-					/>
-				</Toolbar>
-				{ hasFixedToolbar && <BlockToolbar /> }
+				<Inserter disabled={ ! showInserter } />
+				{ renderHistoryButtons() }
+				<BlockToolbar />
 			</ScrollView>
 			{ showKeyboardHideButton && (
 				<Toolbar passedStyle={ styles.keyboardHideContainer }>
@@ -100,15 +108,13 @@ export default compose( [
 	withSelect( ( select ) => ( {
 		hasRedo: select( 'core/editor' ).hasEditorRedo(),
 		hasUndo: select( 'core/editor' ).hasEditorUndo(),
-		hasFixedToolbar: select( 'core/edit-post' ).isFeatureActive(
-			'fixedToolbar'
-		),
 		// This setting (richEditingEnabled) should not live in the block editor's setting.
 		showInserter:
 			select( 'core/edit-post' ).getEditorMode() === 'visual' &&
 			select( 'core/editor' ).getEditorSettings().richEditingEnabled,
 		isTextModeEnabled:
 			select( 'core/edit-post' ).getEditorMode() === 'text',
+		isRTL: select( 'core/block-editor' ).getSettings().isRTL,
 	} ) ),
 	withDispatch( ( dispatch ) => {
 		const { clearSelectedBlock } = dispatch( 'core/block-editor' );

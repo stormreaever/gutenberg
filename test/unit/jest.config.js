@@ -26,13 +26,18 @@ module.exports = {
 		'/.git/',
 		'/node_modules/',
 		'/packages/e2e-tests',
-		'/wordpress/',
+		'<rootDir>/wordpress/',
 		'<rootDir>/.*/build/',
 		'<rootDir>/.*/build-module/',
 		'<rootDir>/.+.native.js$',
+		'/packages/react-native-*',
 	],
 	transform: {
 		'^.+\\.[jt]sx?$': '<rootDir>/test/unit/scripts/babel-transformer.js',
 	},
 	snapshotSerializers: [ 'enzyme-to-json/serializer', 'jest-emotion' ],
+	watchPlugins: [
+		'jest-watch-typeahead/filename',
+		'jest-watch-typeahead/testname',
+	],
 };

@@ -1,7 +1,16 @@
 /**
  * External dependencies
  */
-import { find, get, has, map, pick, mapValues, includes } from 'lodash';
+import {
+	find,
+	get,
+	has,
+	isString,
+	pick,
+	mapValues,
+	includes,
+	some,
+} from 'lodash';
 import createSelector from 'rememo';
 
 /**
@@ -16,6 +25,7 @@ import { isInTheFuture, getDate } from '@wordpress/date';
 import { addQueryArgs } from '@wordpress/url';
 import { createRegistrySelector } from '@wordpress/data';
 import deprecated from '@wordpress/deprecated';
+import { Platform } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -30,6 +40,7 @@ import {
 } from './constants';
 import { getPostRawValue } from './reducer';
 import serializeBlocks from './utils/serialize-blocks';
+import { cleanForSlug } from '../utils/url';
 
 /**
  * Shared reference to an empty object for cases where it is important to avoid
@@ -143,57 +154,17 @@ export const isEditedPostDirty = createRegistrySelector(
  */
 export const hasNonPostEntityChanges = createRegistrySelector(
 	( select ) => ( state ) => {
-		const enableFullSiteEditing = getEditorSettings( state )
-			.__experimentalEnableFullSiteEditing;
-		if ( ! enableFullSiteEditing ) {
-			return false;
-		}
-
-		const entityRecordChangesByRecord = select(
+		const dirtyEntityRecords = select(
 			'core'
-		).getEntityRecordChangesByRecord();
-		const changedKinds = Object.keys( entityRecordChangesByRecord );
-		if (
-			changedKinds.length > 1 ||
-			( changedKinds.length === 1 &&
-				! entityRecordChangesByRecord.postType )
-		) {
-			// Return true if there is more than one edited entity kind
-			// or the edited entity kind is not the editor's post's kind.
-			return true;
-		} else if ( ! entityRecordChangesByRecord.postType ) {
-			// Don't continue if there are no edited entity kinds.
-			return false;
-		}
-
+		).__experimentalGetDirtyEntityRecords();
 		const { type, id } = getCurrentPost( state );
-		const changedPostTypes = Object.keys(
-			entityRecordChangesByRecord.postType
+		return some(
+			dirtyEntityRecords,
+			( entityRecord ) =>
+				entityRecord.kind !== 'postType' ||
+				entityRecord.name !== type ||
+				entityRecord.key !== id
 		);
-		if (
-			changedPostTypes.length > 1 ||
-			( changedPostTypes.length === 1 &&
-				! entityRecordChangesByRecord.postType[ type ] )
-		) {
-			// Return true if there is more than one edited post type
-			// or the edited entity's post type is not the editor's post's post type.
-			return true;
-		}
-
-		const changedPosts = Object.keys(
-			entityRecordChangesByRecord.postType[ type ]
-		);
-		if (
-			changedPosts.length > 1 ||
-			( changedPosts.length === 1 &&
-				! entityRecordChangesByRecord.postType[ type ][ id ] )
-		) {
-			// Return true if there is more than one edited post
-			// or the edited post is not the editor's post.
-			return true;
-		}
-
-		return false;
 	}
 );
 
@@ -578,7 +549,8 @@ export function isEditedPostSaveable( state ) {
 	return (
 		!! getEditedPostAttribute( state, 'title' ) ||
 		!! getEditedPostAttribute( state, 'excerpt' ) ||
-		! isEditedPostEmpty( state )
+		! isEditedPostEmpty( state ) ||
+		Platform.OS === 'native'
 	);
 }
 
@@ -640,64 +612,63 @@ export function isEditedPostEmpty( state ) {
  * @return {boolean} Whether the post can be autosaved.
  */
 export const isEditedPostAutosaveable = createRegistrySelector(
-	( select ) =>
-		function( state ) {
-			// A post must contain a title, an excerpt, or non-empty content to be valid for autosaving.
-			if ( ! isEditedPostSaveable( state ) ) {
-				return false;
-			}
-
-			// A post is not autosavable when there is a post autosave lock.
-			if ( isPostAutosavingLocked( state ) ) {
-				return false;
-			}
-
-			const postType = getCurrentPostType( state );
-			const postId = getCurrentPostId( state );
-			const hasFetchedAutosave = select( 'core' ).hasFetchedAutosaves(
-				postType,
-				postId
-			);
-			const currentUserId = get( select( 'core' ).getCurrentUser(), [
-				'id',
-			] );
-
-			// Disable reason - this line causes the side-effect of fetching the autosave
-			// via a resolver, moving below the return would result in the autosave never
-			// being fetched.
-			// eslint-disable-next-line @wordpress/no-unused-vars-before-return
-			const autosave = select( 'core' ).getAutosave(
-				postType,
-				postId,
-				currentUserId
-			);
-
-			// If any existing autosaves have not yet been fetched, this function is
-			// unable to determine if the post is autosaveable, so return false.
-			if ( ! hasFetchedAutosave ) {
-				return false;
-			}
-
-			// If we don't already have an autosave, the post is autosaveable.
-			if ( ! autosave ) {
-				return true;
-			}
-
-			// To avoid an expensive content serialization, use the content dirtiness
-			// flag in place of content field comparison against the known autosave.
-			// This is not strictly accurate, and relies on a tolerance toward autosave
-			// request failures for unnecessary saves.
-			if ( hasChangedContent( state ) ) {
-				return true;
-			}
-
-			// If the title or excerpt has changed, the post is autosaveable.
-			return [ 'title', 'excerpt' ].some(
-				( field ) =>
-					getPostRawValue( autosave[ field ] ) !==
-					getEditedPostAttribute( state, field )
-			);
+	( select ) => ( state ) => {
+		// A post must contain a title, an excerpt, or non-empty content to be valid for autosaving.
+		if ( ! isEditedPostSaveable( state ) ) {
+			return false;
 		}
+
+		// A post is not autosavable when there is a post autosave lock.
+		if ( isPostAutosavingLocked( state ) ) {
+			return false;
+		}
+
+		const postType = getCurrentPostType( state );
+		const postId = getCurrentPostId( state );
+		const hasFetchedAutosave = select( 'core' ).hasFetchedAutosaves(
+			postType,
+			postId
+		);
+		const currentUserId = get( select( 'core' ).getCurrentUser(), [
+			'id',
+		] );
+
+		// Disable reason - this line causes the side-effect of fetching the autosave
+		// via a resolver, moving below the return would result in the autosave never
+		// being fetched.
+		// eslint-disable-next-line @wordpress/no-unused-vars-before-return
+		const autosave = select( 'core' ).getAutosave(
+			postType,
+			postId,
+			currentUserId
+		);
+
+		// If any existing autosaves have not yet been fetched, this function is
+		// unable to determine if the post is autosaveable, so return false.
+		if ( ! hasFetchedAutosave ) {
+			return false;
+		}
+
+		// If we don't already have an autosave, the post is autosaveable.
+		if ( ! autosave ) {
+			return true;
+		}
+
+		// To avoid an expensive content serialization, use the content dirtiness
+		// flag in place of content field comparison against the known autosave.
+		// This is not strictly accurate, and relies on a tolerance toward autosave
+		// request failures for unnecessary saves.
+		if ( hasChangedContent( state ) ) {
+			return true;
+		}
+
+		// If the title or excerpt has changed, the post is autosaveable.
+		return [ 'title', 'excerpt' ].some(
+			( field ) =>
+				getPostRawValue( autosave[ field ] ) !==
+				getEditedPostAttribute( state, field )
+		);
+	}
 );
 
 /**
@@ -793,7 +764,7 @@ export function isEditedPostDateFloating( state ) {
 		status === 'auto-draft' ||
 		status === 'pending'
 	) {
-		return date === modified;
+		return date === modified || date === null;
 	}
 	return false;
 }
@@ -923,19 +894,28 @@ export function getEditedPostPreviewLink( state ) {
 export function getSuggestedPostFormat( state ) {
 	const blocks = getEditorBlocks( state );
 
+	if ( blocks.length > 2 ) return null;
+
 	let name;
 	// If there is only one block in the content of the post grab its name
 	// so we can derive a suitable post format from it.
 	if ( blocks.length === 1 ) {
 		name = blocks[ 0 ].name;
+		// check for core/embed `video` and `audio` eligible suggestions
+		if ( name === 'core/embed' ) {
+			const provider = blocks[ 0 ].attributes?.providerNameSlug;
+			if ( [ 'youtube', 'vimeo' ].includes( provider ) ) {
+				name = 'core/video';
+			} else if ( [ 'spotify', 'soundcloud' ].includes( provider ) ) {
+				name = 'core/audio';
+			}
+		}
 	}
 
 	// If there are two blocks in the content and the last one is a text blocks
 	// grab the name of the first one to also suggest a post format from it.
-	if ( blocks.length === 2 ) {
-		if ( blocks[ 1 ].name === 'core/paragraph' ) {
-			name = blocks[ 0 ].name;
-		}
+	if ( blocks.length === 2 && blocks[ 1 ].name === 'core/paragraph' ) {
+		name = blocks[ 0 ].name;
 	}
 
 	// We only convert to default post formats in core.
@@ -948,16 +928,12 @@ export function getSuggestedPostFormat( state ) {
 		case 'core/gallery':
 			return 'gallery';
 		case 'core/video':
-		case 'core-embed/youtube':
-		case 'core-embed/vimeo':
 			return 'video';
 		case 'core/audio':
-		case 'core-embed/spotify':
-		case 'core-embed/soundcloud':
 			return 'audio';
+		default:
+			return null;
 	}
-
-	return null;
 }
 
 /**
@@ -1023,73 +999,6 @@ export const getEditedPostContent = createRegistrySelector(
 		}
 		return '';
 	}
-);
-
-/**
- * Returns the reusable block with the given ID.
- *
- * @param {Object}        state Global application state.
- * @param {number|string} ref   The reusable block's ID.
- *
- * @return {Object} The reusable block, or null if none exists.
- */
-export const __experimentalGetReusableBlock = createSelector(
-	( state, ref ) => {
-		const block = state.reusableBlocks.data[ ref ];
-		if ( ! block ) {
-			return null;
-		}
-
-		const isTemporary = isNaN( parseInt( ref ) );
-
-		return {
-			...block,
-			id: isTemporary ? ref : +ref,
-			isTemporary,
-		};
-	},
-	( state, ref ) => [ state.reusableBlocks.data[ ref ] ]
-);
-
-/**
- * Returns whether or not the reusable block with the given ID is being saved.
- *
- * @param {Object} state Global application state.
- * @param {string} ref   The reusable block's ID.
- *
- * @return {boolean} Whether or not the reusable block is being saved.
- */
-export function __experimentalIsSavingReusableBlock( state, ref ) {
-	return state.reusableBlocks.isSaving[ ref ] || false;
-}
-
-/**
- * Returns true if the reusable block with the given ID is being fetched, or
- * false otherwise.
- *
- * @param {Object} state Global application state.
- * @param {string} ref   The reusable block's ID.
- *
- * @return {boolean} Whether the reusable block is being fetched.
- */
-export function __experimentalIsFetchingReusableBlock( state, ref ) {
-	return !! state.reusableBlocks.isFetching[ ref ];
-}
-
-/**
- * Returns an array of all reusable blocks.
- *
- * @param {Object} state Global application state.
- *
- * @return {Array} An array of all reusable blocks.
- */
-export const __experimentalGetReusableBlocks = createSelector(
-	( state ) => {
-		return map( state.reusableBlocks.data, ( value, ref ) =>
-			__experimentalGetReusableBlock( state, ref )
-		);
-	},
-	( state ) => [ state.reusableBlocks.data ]
 );
 
 /**
@@ -1181,6 +1090,23 @@ export function getPermalink( state ) {
 	}
 
 	return prefix;
+}
+
+/**
+ * Returns the slug for the post being edited, preferring a manually edited
+ * value if one exists, then a sanitized version of the current post title, and
+ * finally the post ID.
+ *
+ * @param {Object} state Editor state.
+ *
+ * @return {string} The current slug to be displayed in the editor
+ */
+export function getEditedPostSlug( state ) {
+	return (
+		getEditedPostAttribute( state, 'slug' ) ||
+		cleanForSlug( getEditedPostAttribute( state, 'title' ) ) ||
+		getCurrentPostId( state )
+	);
 }
 
 /**
@@ -1341,6 +1267,20 @@ export function isPublishSidebarEnabled( state ) {
  */
 export function getEditorBlocks( state ) {
 	return getEditedPostAttribute( state, 'blocks' ) || EMPTY_ARRAY;
+}
+
+/**
+ * Checks whether a post is an auto-draft ignoring the optimistic transaction.
+ * This selector shouldn't be necessary. It's currently used as a workaround
+ * to avoid template resolution for auto-drafts which has a backend bug.
+ *
+ * @param {Object} state State.
+ * @return {boolean} Whether the post is "auto-draft" on the backend.
+ */
+export function __unstableIsAutodraftPost( state ) {
+	const post = getCurrentPost( state );
+	const isSaving = isSavingPost( state );
+	return isSaving || post.status === 'auto-draft';
 }
 
 /**
@@ -1734,3 +1674,59 @@ export const hasInserterItems = getBlockEditorSelector( 'hasInserterItems' );
 export const getBlockListSettings = getBlockEditorSelector(
 	'getBlockListSettings'
 );
+
+/**
+ * Returns the default template types.
+ *
+ * @param {Object} state Global application state.
+ *
+ * @return {Object} The template types.
+ */
+export function __experimentalGetDefaultTemplateTypes( state ) {
+	return getEditorSettings( state )?.defaultTemplateTypes;
+}
+
+/**
+ * Returns a default template type searched by slug.
+ *
+ * @param {Object} state Global application state.
+ * @param {string} slug The template type slug.
+ *
+ * @return {Object} The template type.
+ */
+export const __experimentalGetDefaultTemplateType = createSelector(
+	( state, slug ) =>
+		find( __experimentalGetDefaultTemplateTypes( state ), { slug } ) || {},
+	( state, slug ) => [ __experimentalGetDefaultTemplateTypes( state ), slug ]
+);
+
+/**
+ * Given a template entity, return information about it which is ready to be
+ * rendered, such as the title and description.
+ *
+ * @param {Object} state Global application state.
+ * @param {Object} template The template for which we need information.
+ * @return {Object} Information about the template, including title and description.
+ */
+export function __experimentalGetTemplateInfo( state, template ) {
+	if ( ! template ) {
+		return {};
+	}
+
+	const { excerpt, slug, title } = template;
+	const {
+		title: defaultTitle,
+		description: defaultDescription,
+	} = __experimentalGetDefaultTemplateType( state, slug );
+
+	const templateTitle = isString( title ) ? title : title?.rendered;
+	const templateDescription = isString( excerpt ) ? excerpt : excerpt?.raw;
+
+	return {
+		title:
+			templateTitle && templateTitle !== slug
+				? templateTitle
+				: defaultTitle || slug,
+		description: templateDescription || defaultDescription,
+	};
+}

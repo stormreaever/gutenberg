@@ -7,13 +7,8 @@ import {
 	getEditedPostContent,
 	createNewPost,
 	pressKeyWithModifier,
+	showBlockToolbar,
 } from '@wordpress/e2e-test-utils';
-
-/**
- * The modifier keys needed to invoke a 'select the next word' keyboard shortcut.
- *
- * @type {string}
- */
 
 describe( 'Links', () => {
 	beforeEach( async () => {
@@ -25,6 +20,42 @@ describe( 'Links', () => {
 			() => !! document.activeElement.closest( '.block-editor-url-input' )
 		);
 	};
+
+	it( 'will use Post title as link text if link to existing post is created without any text selected', async () => {
+		const titleText = 'Post to create a link to';
+		await createPostWithTitle( titleText );
+
+		await createNewPost();
+		await clickBlockAppender();
+
+		// Now in a new post and try to create a link from an autocomplete suggestion using the keyboard.
+		await page.keyboard.type( 'Here comes a link: ' );
+
+		// Press Cmd+K to insert a link
+		await pressKeyWithModifier( 'primary', 'K' );
+
+		// Wait for the URL field to auto-focus
+		await waitForAutoFocus();
+		expect(
+			await page.$(
+				'.components-popover__content .block-editor-link-control'
+			)
+		).not.toBeNull();
+
+		// Trigger the autocomplete suggestion list and select the first suggestion.
+		await page.keyboard.type( titleText.substr( 0, titleText.length - 2 ) );
+		await page.waitForSelector( '.block-editor-link-control__search-item' );
+		await page.keyboard.press( 'ArrowDown' );
+
+		await page.keyboard.press( 'Enter' );
+
+		const actualText = await page.evaluate(
+			() =>
+				document.querySelector( '.block-editor-rich-text__editable a' )
+					.textContent
+		);
+		expect( actualText ).toBe( titleText );
+	} );
 
 	it( 'can be created by selecting text and clicking Link', async () => {
 		// Create a block with some text
@@ -122,6 +153,9 @@ describe( 'Links', () => {
 		await pressKeyWithModifier( 'shiftAlt', 'ArrowLeft' );
 		await pressKeyWithModifier( 'shiftAlt', 'ArrowLeft' );
 		await pressKeyWithModifier( 'shiftAlt', 'ArrowLeft' );
+		await pressKeyWithModifier( 'shiftAlt', 'ArrowLeft' );
+		await pressKeyWithModifier( 'shiftAlt', 'ArrowLeft' );
+		await pressKeyWithModifier( 'shiftAlt', 'ArrowLeft' );
 
 		// Click on the Link button
 		await page.click( 'button[aria-label="Link"]' );
@@ -170,6 +204,9 @@ describe( 'Links', () => {
 
 		// Click on the Submit button
 		await page.keyboard.press( 'Enter' );
+
+		// Reselect the link.
+		await pressKeyWithModifier( 'shiftAlt', 'ArrowLeft' );
 	};
 
 	it( 'can be edited', async () => {
@@ -264,9 +301,7 @@ describe( 'Links', () => {
 		// Make a collapsed selection inside the link
 		await page.keyboard.press( 'ArrowLeft' );
 		await page.keyboard.press( 'ArrowRight' );
-		// Move the mouse to show the block toolbar
-		await page.mouse.move( 0, 0 );
-		await page.mouse.move( 10, 10 );
+		await showBlockToolbar();
 		const [ editButton ] = await page.$x( '//button[text()="Edit"]' );
 		await editButton.click();
 		await waitForAutoFocus();
@@ -460,13 +495,6 @@ describe( 'Links', () => {
 		await waitForAutoFocus();
 		await page.keyboard.type( 'w.org' );
 
-		// Insert the link
-		await page.keyboard.press( 'Enter' );
-
-		// Navigate back to the popover
-		await pressKeyWithModifier( 'primary', 'k' );
-		await waitForAutoFocus();
-
 		// Navigate to and toggle the "Open in new tab" checkbox.
 		await page.keyboard.press( 'Tab' );
 		await page.keyboard.press( 'Tab' );
@@ -478,7 +506,13 @@ describe( 'Links', () => {
 
 		// Close dialog. Expect that "Open in new tab" would have been applied
 		// immediately.
-		await page.keyboard.press( 'Escape' );
+		await page.keyboard.press( 'Tab' );
+		await page.keyboard.press( 'Enter' );
+
+		// Wait for Gutenberg to finish the job.
+		await page.waitForXPath(
+			'//a[contains(@href,"w.org") and @target="_blank"]'
+		);
 
 		expect( await getEditedPostContent() ).toMatchSnapshot();
 
@@ -489,9 +523,10 @@ describe( 'Links', () => {
 		//
 		// See: https://github.com/WordPress/gutenberg/pull/15573
 
-		// Collapse selection.
+		// Move caret back into the link.
 		await page.keyboard.press( 'ArrowLeft' );
-		await page.keyboard.press( 'ArrowRight' );
+		await page.keyboard.press( 'ArrowLeft' );
+
 		// Edit link.
 		await pressKeyWithModifier( 'primary', 'k' );
 		await waitForAutoFocus();
@@ -502,6 +537,10 @@ describe( 'Links', () => {
 		await page.keyboard.press( 'Enter' );
 
 		// Navigate back to the popover
+		await page.keyboard.press( 'ArrowLeft' );
+		await page.keyboard.press( 'ArrowLeft' );
+
+		// Navigate back to inputs to verify appears as changed.
 		await pressKeyWithModifier( 'primary', 'k' );
 		await waitForAutoFocus();
 
@@ -510,6 +549,11 @@ describe( 'Links', () => {
 		await page.keyboard.press( 'Tab' );
 		// Uncheck the checkbox.
 		await page.keyboard.press( 'Space' );
+
+		// Wait for Gutenberg to finish the job.
+		await page.waitForXPath(
+			'//a[contains(@href,"wordpress.org") and not(@target)]'
+		);
 
 		expect( await getEditedPostContent() ).toMatchSnapshot();
 	} );

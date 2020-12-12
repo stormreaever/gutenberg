@@ -1,9 +1,4 @@
 /**
- * WordPress dependencies
- */
-import { getScrollContainer } from '@wordpress/dom';
-
-/**
  * Module constants
  */
 const HEIGHT_OFFSET = 10; // used by the arrow and a bit of empty space
@@ -11,14 +6,16 @@ const HEIGHT_OFFSET = 10; // used by the arrow and a bit of empty space
 /**
  * Utility used to compute the popover position over the xAxis
  *
- * @param {Object}  anchorRect  Anchor Rect.
- * @param {Object}  contentSize Content Size.
- * @param {string}  xAxis       Desired xAxis.
- * @param {string}  corner      Desired corner.
- * @param {boolean} sticky      Whether or not to stick the popover to the
- *                              scroll container edge when part of the anchor
- *                              leaves view.
- * @param {string}  chosenYAxis yAxis to be used.
+ * @param {Object}  anchorRect            Anchor Rect.
+ * @param {Object}  contentSize           Content Size.
+ * @param {string}  xAxis                 Desired xAxis.
+ * @param {string}  corner                Desired corner.
+ * @param {boolean} stickyBoundaryElement The boundary element to use when
+ *                                        switching between sticky and normal
+ *                                        position.
+ * @param {string}  chosenYAxis           yAxis to be used.
+ * @param {Element} boundaryElement       Boundary element.
+ * @param {boolean} forcePosition         Don't adjust position based on anchor.
  *
  * @return {Object} Popover xAxis position and constraints.
  */
@@ -27,8 +24,10 @@ export function computePopoverXAxisPosition(
 	contentSize,
 	xAxis,
 	corner,
-	sticky,
-	chosenYAxis
+	stickyBoundaryElement,
+	chosenYAxis,
+	boundaryElement,
+	forcePosition
 ) {
 	const { width } = contentSize;
 	const isRTL = document.documentElement.dir === 'rtl';
@@ -89,7 +88,7 @@ export function computePopoverXAxisPosition(
 	let chosenXAxis = xAxis;
 	let contentWidth = null;
 
-	if ( ! sticky ) {
+	if ( ! stickyBoundaryElement && ! forcePosition ) {
 		if ( xAxis === 'center' && centerAlignment.contentWidth === width ) {
 			chosenXAxis = 'center';
 		} else if ( xAxis === 'left' && leftAlignment.contentWidth === width ) {
@@ -121,6 +120,11 @@ export function computePopoverXAxisPosition(
 		popoverLeft = rightAlignment.popoverLeft;
 	}
 
+	if ( boundaryElement ) {
+		const boundaryRect = boundaryElement.getBoundingClientRect();
+		popoverLeft = Math.min( popoverLeft, boundaryRect.right - width );
+	}
+
 	return {
 		xAxis: chosenXAxis,
 		popoverLeft,
@@ -131,16 +135,17 @@ export function computePopoverXAxisPosition(
 /**
  * Utility used to compute the popover position over the yAxis
  *
- * @param {Object}  anchorRect        Anchor Rect.
- * @param {Object}  contentSize       Content Size.
- * @param {string}  yAxis             Desired yAxis.
- * @param {string}  corner            Desired corner.
- * @param {boolean} sticky            Whether or not to stick the popover to the
- *                                    scroll container edge when part of the
- *                                    anchor leaves view.
- * @param {Element} anchorRef         The anchor element.
- * @param {Element} relativeOffsetTop If applicable, top offset of the relative
- *                                    positioned parent container.
+ * @param {Object}  anchorRect            Anchor Rect.
+ * @param {Object}  contentSize           Content Size.
+ * @param {string}  yAxis                 Desired yAxis.
+ * @param {string}  corner                Desired corner.
+ * @param {boolean} stickyBoundaryElement The boundary element to use when
+ *                                        switching between sticky and normal
+ *                                        position.
+ * @param {Element} anchorRef             The anchor element.
+ * @param {Element} relativeOffsetTop     If applicable, top offset of the
+ *                                        relative positioned parent container.
+ * @param {boolean} forcePosition         Don't adjust position based on anchor.
  *
  * @return {Object} Popover xAxis position and constraints.
  */
@@ -149,24 +154,21 @@ export function computePopoverYAxisPosition(
 	contentSize,
 	yAxis,
 	corner,
-	sticky,
+	stickyBoundaryElement,
 	anchorRef,
-	relativeOffsetTop
+	relativeOffsetTop,
+	forcePosition
 ) {
 	const { height } = contentSize;
 
-	if ( sticky ) {
-		const scrollContainerEl =
-			getScrollContainer( anchorRef ) || document.body;
-		const scrollRect = scrollContainerEl.getBoundingClientRect();
+	if ( stickyBoundaryElement ) {
+		const stickyRect = stickyBoundaryElement.getBoundingClientRect();
+		const stickyPosition = stickyRect.top + height - relativeOffsetTop;
 
-		if ( anchorRect.top - height <= scrollRect.top ) {
+		if ( anchorRect.top <= stickyPosition ) {
 			return {
 				yAxis,
-				popoverTop: Math.min(
-					anchorRect.bottom - relativeOffsetTop,
-					scrollRect.top + height - relativeOffsetTop
-				),
+				popoverTop: Math.min( anchorRect.bottom, stickyPosition ),
 			};
 		}
 	}
@@ -208,7 +210,7 @@ export function computePopoverYAxisPosition(
 	let chosenYAxis = yAxis;
 	let contentHeight = null;
 
-	if ( ! sticky ) {
+	if ( ! stickyBoundaryElement && ! forcePosition ) {
 		if ( yAxis === 'middle' && middleAlignment.contentHeight === height ) {
 			chosenYAxis = 'middle';
 		} else if ( yAxis === 'top' && topAlignment.contentHeight === height ) {
@@ -251,15 +253,17 @@ export function computePopoverYAxisPosition(
  * Utility used to compute the popover position and the content max width/height
  * for a popover given its anchor rect and its content size.
  *
- * @param {Object}  anchorRect        Anchor Rect.
- * @param {Object}  contentSize       Content Size.
- * @param {string}  position          Position.
- * @param {boolean} sticky            Whether or not to stick the popover to the
- *                                    scroll container edge when part of the
- *                                    anchor leaves view.
- * @param {Element} anchorRef         The anchor element.
- * @param {number}  relativeOffsetTop If applicable, top offset of the relative
- *                                    positioned parent container.
+ * @param {Object}  anchorRect            Anchor Rect.
+ * @param {Object}  contentSize           Content Size.
+ * @param {string}  position              Position.
+ * @param {boolean} stickyBoundaryElement The boundary element to use when
+ *                                        switching between sticky and normal
+ *                                        position.
+ * @param {Element} anchorRef             The anchor element.
+ * @param {number}  relativeOffsetTop     If applicable, top offset of the
+ *                                        relative positioned parent container.
+ * @param {Element} boundaryElement       Boundary element.
+ * @param {boolean} forcePosition         Don't adjust position based on anchor.
  *
  * @return {Object} Popover position and constraints.
  */
@@ -267,9 +271,11 @@ export function computePopoverPosition(
 	anchorRect,
 	contentSize,
 	position = 'top',
-	sticky,
+	stickyBoundaryElement,
 	anchorRef,
-	relativeOffsetTop
+	relativeOffsetTop,
+	boundaryElement,
+	forcePosition
 ) {
 	const [ yAxis, xAxis = 'center', corner ] = position.split( ' ' );
 
@@ -278,17 +284,20 @@ export function computePopoverPosition(
 		contentSize,
 		yAxis,
 		corner,
-		sticky,
+		stickyBoundaryElement,
 		anchorRef,
-		relativeOffsetTop
+		relativeOffsetTop,
+		forcePosition
 	);
 	const xAxisPosition = computePopoverXAxisPosition(
 		anchorRect,
 		contentSize,
 		xAxis,
 		corner,
-		sticky,
-		yAxisPosition.yAxis
+		stickyBoundaryElement,
+		yAxisPosition.yAxis,
+		boundaryElement,
+		forcePosition
 	);
 
 	return {

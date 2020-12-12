@@ -7,19 +7,16 @@ import { noop } from 'lodash';
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { MenuItem, withSpokenMessages } from '@wordpress/components';
+import { MenuItem } from '@wordpress/components';
 import { useSelect, useDispatch } from '@wordpress/data';
-import { cog } from '@wordpress/icons';
+import { speak } from '@wordpress/a11y';
+import { store as keyboardShortcutsStore } from '@wordpress/keyboard-shortcuts';
 
-export function BlockInspectorButton( {
-	onClick = noop,
-	small = false,
-	speak,
-} ) {
+export function BlockInspectorButton( { onClick = noop, small = false } ) {
 	const { shortcut, areAdvancedSettingsOpened } = useSelect(
 		( select ) => ( {
 			shortcut: select(
-				'core/keyboard-shortcuts'
+				keyboardShortcutsStore
 			).getShortcutRepresentation( 'core/edit-post/toggle-sidebar' ),
 			areAdvancedSettingsOpened:
 				select( 'core/edit-post' ).getActiveGeneralSidebarName() ===
@@ -44,8 +41,8 @@ export function BlockInspectorButton( {
 	};
 
 	const label = areAdvancedSettingsOpened
-		? __( 'Hide Block Settings' )
-		: __( 'Show Block Settings' );
+		? __( 'Hide More Settings' )
+		: __( 'Show More Settings' );
 
 	return (
 		<MenuItem
@@ -58,7 +55,6 @@ export function BlockInspectorButton( {
 					onClick();
 				}
 			} }
-			icon={ cog }
 			shortcut={ shortcut }
 		>
 			{ ! small && label }
@@ -66,4 +62,4 @@ export function BlockInspectorButton( {
 	);
 }
 
-export default withSpokenMessages( BlockInspectorButton );
+export default BlockInspectorButton;

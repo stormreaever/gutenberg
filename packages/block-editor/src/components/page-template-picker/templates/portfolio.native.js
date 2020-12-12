@@ -6,6 +6,7 @@ import { __ } from '@wordpress/i18n';
 const Portfolio = {
 	// translators: title for "Portfolio" page template
 	name: __( 'Portfolio' ),
+	key: 'portfolio',
 	icon: '🎨',
 	content: [
 		{
@@ -40,28 +41,35 @@ const Portfolio = {
 					{
 						url:
 							'https://a8ctm1.files.wordpress.com/2019/08/scatter-1.jpg?w=640',
+						id: '658',
 					},
 					{
 						url:
 							'https://a8ctm1.files.wordpress.com/2019/08/redcylinder-1.jpg?w=640',
+						id: '659',
 					},
 					{
 						url:
 							'https://a8ctm1.files.wordpress.com/2019/08/redbox.jpg?w=640',
+						id: '660',
 					},
 					{
 						url:
 							'https://a8ctm1.files.wordpress.com/2019/08/crab-1.jpg?w=640',
+						id: '661',
 					},
 					{
 						url:
 							'https://a8ctm1.files.wordpress.com/2019/08/cat.jpg?w=640',
+						id: '662',
 					},
 					{
 						url:
 							'https://a8ctm1.files.wordpress.com/2019/08/bluebox.jpg?w=640',
+						id: '663',
 					},
 				],
+				ids: [ 658, 659, 660, 661, 662, 663 ],
 				caption: '',
 				imageCrop: true,
 				linkTo: 'none',
@@ -110,28 +118,35 @@ const Portfolio = {
 					{
 						url:
 							'https://a8ctm1.files.wordpress.com/2019/08/scatter-1.jpg?w=640',
+						id: '658',
 					},
 					{
 						url:
 							'https://a8ctm1.files.wordpress.com/2019/08/redcylinder-1.jpg?w=640',
+						id: '659',
 					},
 					{
 						url:
 							'https://a8ctm1.files.wordpress.com/2019/08/redbox.jpg?w=640',
+						id: '660',
 					},
 					{
 						url:
 							'https://a8ctm1.files.wordpress.com/2019/08/crab-1.jpg?w=640',
+						id: '661',
 					},
 					{
 						url:
 							'https://a8ctm1.files.wordpress.com/2019/08/cat.jpg?w=640',
+						id: '662',
 					},
 					{
 						url:
 							'https://a8ctm1.files.wordpress.com/2019/08/bluebox.jpg?w=640',
+						id: '663',
 					},
 				],
+				ids: [ 658, 659, 660, 661, 662, 663 ],
 				caption: '',
 				imageCrop: true,
 				linkTo: 'none',
@@ -169,20 +184,28 @@ const Portfolio = {
 			attributes: {
 				align: 'center',
 				// translators: sample content for "Portfolio" page template
-				content: __( "Let's build something together." ),
+				content: __( "Let's build something together!" ),
 				level: 2,
 			},
 		},
 		{
-			name: 'core/button',
+			name: 'core/buttons',
 			attributes: {
-				url: '',
-				// translators: sample content for "Portfolio" page template
-				text: __( 'Get in touch!' ),
-				linkTarget: '',
-				rel: '',
-				className: 'aligncenter',
+				align: 'center',
 			},
+			innerBlocks: [
+				{
+					name: 'core/button',
+					attributes: {
+						url: '',
+						// translators: sample content for "Portfolio" page template
+						text: __( 'Get in Touch' ),
+						linkTarget: '',
+						rel: '',
+						className: 'aligncenter',
+					},
+				},
+			],
 		},
 		{
 			name: 'core/spacer',

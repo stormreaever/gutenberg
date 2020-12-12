@@ -3,7 +3,6 @@
  */
 import { Platform, SafeAreaView, View } from 'react-native';
 import SafeArea from 'react-native-safe-area';
-import { sendNativeEditorDidLayout } from 'react-native-gutenberg-bridge';
 
 /**
  * WordPress dependencies
@@ -13,11 +12,17 @@ import { withSelect } from '@wordpress/data';
 import {
 	BottomSheetSettings,
 	__experimentalPageTemplatePicker,
-	__experimentalWithPageTemplatePickerVisible,
+	__experimentalWithPageTemplatePicker,
+	FloatingToolbar,
 } from '@wordpress/block-editor';
 import { compose, withPreferredColorScheme } from '@wordpress/compose';
-import { HTMLTextInput, KeyboardAvoidingView } from '@wordpress/components';
+import {
+	HTMLTextInput,
+	KeyboardAvoidingView,
+	NoticeList,
+} from '@wordpress/components';
 import { AutosaveMonitor } from '@wordpress/editor';
+import { sendNativeEditorDidLayout } from '@wordpress/react-native-bridge';
 
 /**
  * Internal dependencies
@@ -94,9 +99,10 @@ class Layout extends Component {
 
 	render() {
 		const {
-			mode,
 			getStylesFromColorScheme,
-			showPageTemplatePicker,
+			isTemplatePickerAvailable,
+			isTemplatePickerVisible,
+			mode,
 		} = this.props;
 
 		const isHtmlView = mode === 'text';
@@ -122,7 +128,7 @@ class Layout extends Component {
 				) }
 				onLayout={ this.onRootViewLayout }
 			>
-				<AutosaveMonitor />
+				<AutosaveMonitor disableIntervalChecks />
 				<View
 					style={ getStylesFromColorScheme(
 						styles.background,
@@ -130,6 +136,10 @@ class Layout extends Component {
 					) }
 				>
 					{ isHtmlView ? this.renderHTML() : this.renderVisual() }
+					{ ! isHtmlView && Platform.OS === 'android' && (
+						<FloatingToolbar />
+					) }
+					<NoticeList />
 				</View>
 				<View
 					style={ {
@@ -142,10 +152,14 @@ class Layout extends Component {
 					<KeyboardAvoidingView
 						parentHeight={ this.state.rootViewHeight }
 						style={ toolbarKeyboardAvoidingViewStyle }
+						withAnimatedHeight
 					>
-						{ showPageTemplatePicker && (
-							<__experimentalPageTemplatePicker />
+						{ isTemplatePickerAvailable && (
+							<__experimentalPageTemplatePicker
+								visible={ isTemplatePickerVisible }
+							/>
 						) }
+						{ Platform.OS === 'ios' && <FloatingToolbar /> }
 						<Header />
 						<BottomSheetSettings />
 					</KeyboardAvoidingView>
@@ -161,12 +175,13 @@ export default compose( [
 			'core/editor'
 		);
 		const { getEditorMode } = select( 'core/edit-post' );
-
+		const { getSettings } = select( 'core/block-editor' );
 		return {
 			isReady: isEditorReady(),
 			mode: getEditorMode(),
+			modalLayoutPicker: getSettings( 'capabilities' ).modalLayoutPicker,
 		};
 	} ),
 	withPreferredColorScheme,
-	__experimentalWithPageTemplatePickerVisible,
+	__experimentalWithPageTemplatePicker,
 ] )( Layout );

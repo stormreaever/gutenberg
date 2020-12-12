@@ -9,7 +9,6 @@ import { flatMap, isEmpty, isFunction } from 'lodash';
  */
 import { DOWN } from '@wordpress/keycodes';
 import deprecated from '@wordpress/deprecated';
-import { Fragment } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -38,15 +37,17 @@ function DropdownMenu( {
 	children,
 	className,
 	controls,
-	hasArrowIndicator = false,
 	icon = 'menu',
 	label,
 	popoverProps,
 	toggleProps,
 	menuProps,
+	disableOpenOnArrowDown = false,
+	text,
 	// The following props exist for backward compatibility.
 	menuLabel,
 	position,
+	noIcons,
 } ) {
 	if ( menuLabel ) {
 		deprecated( '`menuLabel` prop in `DropdownComponent`', {
@@ -88,6 +89,10 @@ function DropdownMenu( {
 			popoverProps={ mergedPopoverProps }
 			renderToggle={ ( { isOpen, onToggle } ) => {
 				const openOnArrowDown = ( event ) => {
+					if ( disableOpenOnArrowDown ) {
+						return;
+					}
+
 					if ( ! isOpen && event.keyCode === DOWN ) {
 						event.preventDefault();
 						event.stopPropagation();
@@ -106,23 +111,6 @@ function DropdownMenu( {
 					toggleProps
 				);
 
-				let buttonChildren;
-				if (
-					mergedToggleProps.children ||
-					! icon ||
-					hasArrowIndicator
-				) {
-					buttonChildren = [
-						<Fragment key="0">
-							{ mergedToggleProps.children }
-						</Fragment>,
-						<Fragment key="1">
-							{ ( ! icon || hasArrowIndicator ) && (
-								<span className="components-dropdown-menu__indicator" />
-							) }
-						</Fragment>,
-					];
-				}
 				return (
 					<Button
 						{ ...mergedToggleProps }
@@ -142,9 +130,10 @@ function DropdownMenu( {
 						aria-haspopup="true"
 						aria-expanded={ isOpen }
 						label={ label }
-						showTooltip
+						text={ text }
+						showTooltip={ toggleProps?.showTooltip ?? true }
 					>
-						{ buttonChildren }
+						{ mergedToggleProps.children }
 					</Button>
 				);
 			} }
@@ -152,7 +141,10 @@ function DropdownMenu( {
 				const mergedMenuProps = mergeProps(
 					{
 						'aria-label': menuLabel || label,
-						className: 'components-dropdown-menu__menu',
+						className: classnames(
+							'components-dropdown-menu__menu',
+							{ 'no-icons': noIcons }
+						),
 					},
 					menuProps
 				);
